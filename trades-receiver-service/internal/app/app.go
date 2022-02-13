@@ -20,9 +20,8 @@ import (
 )
 
 func Run(cfg *config.Config, l *logger.Logger) {
-	l.Info("Running app")
 
-	psql, err := postgresql.New(cfg.URL)
+	psql, err := postgresql.New(cfg.Postgres.URL)
 	if err != nil {
 		l.Fatalf("internal.app.postgresql.New: %v", err)
 	}
@@ -40,7 +39,7 @@ func Run(cfg *config.Config, l *logger.Logger) {
 	handler, err := httpapi.NewHandler(insiderTradeService, l)
 	handler.Register(router)
 
-	httpServer := httpserver.New(router, cfg.Port)
+	httpServer := httpserver.New(router, cfg.Server.Port)
 
 	// Starting server with graceful shutdown
 	signalChan := make(chan os.Signal, 1)

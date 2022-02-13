@@ -2,8 +2,6 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"log"
-	"os"
 )
 
 type (
@@ -14,7 +12,7 @@ type (
 	}
 
 	App struct {
-		Name string `yaml:"name"`
+		Name    string `yaml:"name"`
 		Version string `yaml:"version"`
 	}
 
@@ -23,52 +21,81 @@ type (
 	}
 
 	Postgres struct {
-		PoolMax int `yaml:"pool-max"`
-		URL string `env:"POSTGRES_URL"`
+		URL string `mapstructure:"POSTGRES_URL"`
 	}
 )
 
 const (
-	yamlConfigPath = "."
-	envConfigPath = "."
-	envFileName = ".env"
+	yamlFileName   = "config.yml"
+	yamlConfigPath = "./config/"
+	envFileName    = ".env"
+	envConfigPath  = "."
 )
 
 func New() (*Config, error) {
 	cfg := &Config{}
 
-	//configFile, err := ioutil.ReadFile(configPath)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//if err := yaml.Unmarshal(configFile, cfg); err != nil {
-	//	return nil, err
-	//}
+	err := cfg.parseYAML(yamlFileName, yamlConfigPath)
 
-	viper.AddConfigPath(envConfigPath)
-	viper.SetConfigFile(envFileName)
-	viper.SetConfigType("env")
+	if err != nil {
+		return nil, err
+	}
 
-	viper.AutomaticEnv()
+	err = cfg.parseEnv(envFileName, envConfigPath)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (c *Config) parseYAML(fileName, filePath string) error {
+
+	viper.SetConfigName(fileName)
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(filePath)
+	viper.AddConfigPath(".")
 
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = viper.Unmarshal(cfg.Postgres)
+	err = viper.Unmarshal(&c)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	log.Println("Ok")
-	log.Println(cfg.Postgres.URL)
+	return nil
+}
 
-	os.Exit(-1)
+func (c *Config) parseEnv(fileName, filePath string) error {
 
-	return cfg, nil
+	viper.SetConfigName(fileName)
+	viper.SetConfigType("env")
+	viper.AddConfigPath(filePath)
+
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		return err
+	}
+
+	err = viper.Unmarshal(&c.Postgres)
+
+	if err != nil {
+		return err
+	}
+
+	viper.AutomaticEnv()
+	viper.Unmarshal(&c.Postgres)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

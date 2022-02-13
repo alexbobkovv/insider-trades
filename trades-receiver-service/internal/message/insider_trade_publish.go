@@ -7,11 +7,11 @@ import (
 )
 
 type InsiderTradePublisher struct {
-
+	broker *kafka.Kafka
 }
 
 func New(broker *kafka.Kafka) *InsiderTradePublisher {
-	return &InsiderTradePublisher{}
+	return &InsiderTradePublisher{broker}
 }
 
 func (p *InsiderTradePublisher) Publish(ctx context.Context, trade *entity.InsiderTrade) error {

@@ -15,21 +15,22 @@ import (
 
 const (
 	receiverURL = "/insider-trades/receiver"
-	tradesURL = "/trades"
-	rootURL = "/"
+	tradesURL   = "/trades"
+	rootURL     = "/"
 )
 
 type handler struct {
-	service service.InsiderTrade
-	logger *logger.Logger
+	s service.InsiderTrade
+	l *logger.Logger
 }
 
-func NewHandler(s service.InsiderTrade, l *logger.Logger) (*handler, error) {
-	return &handler{service: s, logger: l}, nil
+func NewHandler(service service.InsiderTrade, logger *logger.Logger) (*handler, error) {
+	return &handler{s: service, l: logger}, nil
 }
 
 func (h *handler) Register(router *mux.Router) http.Handler {
-	router.HandleFunc(receiverURL, h.HandlePostTrades).Methods("POST")
+	//router.HandleFunc(receiverURL, h.HandlePostTrades).Methods("POST")
+	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST")
 	router.HandleFunc(tradesURL, h.HandleGetTrades).Methods("GET")
 	router.HandleFunc(rootURL, h.HandleHomePage).Methods("GET")
 
@@ -77,6 +78,6 @@ func (h *handler) Respond(w http.ResponseWriter, r *http.Request, statusCode int
 }
 
 func (h *handler) Error(w http.ResponseWriter, r *http.Request, statusCode int, err error) {
+	h.l.Info("Httpapi handler error:", err, "Status code:", statusCode, "request:", r)
 	h.Respond(w, r, statusCode, map[string]string{"error": err.Error()})
 }
-
