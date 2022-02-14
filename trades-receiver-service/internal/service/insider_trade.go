@@ -6,18 +6,22 @@ import (
 )
 
 type insiderTradeService struct {
-	repo InsiderTradeRepo
+	repo      InsiderTradeRepo
 	publisher InsiderTradePublisher
 }
 
 func New(r InsiderTradeRepo, p InsiderTradePublisher) *insiderTradeService {
 	return &insiderTradeService{
-		repo: r,
+		repo:      r,
 		publisher: p,
 	}
 }
 
 func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.InsiderTrade) error {
+	err := s.store(ctx, trade)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -25,8 +29,8 @@ func (s *insiderTradeService) GetAll(ctx context.Context, limit, offset int) ([]
 	return []*entity.InsiderTrade{&entity.InsiderTrade{}}, nil
 }
 
-func (s *insiderTradeService) store(ctx context.Context, insiderTrade *entity.InsiderTrade) error {
-	err := s.repo.Store(ctx, insiderTrade)
+func (s *insiderTradeService) store(ctx context.Context, trade *entity.InsiderTrade) error {
+	err := s.repo.Store(ctx, trade)
 	if err != nil {
 		return err
 	}

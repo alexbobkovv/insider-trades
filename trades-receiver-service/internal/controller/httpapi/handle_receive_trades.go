@@ -21,9 +21,9 @@ type InsiderTrades struct {
 		FilingType  int    `json:"FilingType"`
 		ReportedOn  string `json:"ReportedOn"`
 		Issuer      int    `json:"Issuer"`
-		_Issuer     string `json:"_Issuer,omitempty"`
+		Issuer_     string `json:"_Issuer,omitempty"`
 		Owner       int    `json:"Owner"`
-		_Owner      string `json:"_Owner,omitempty"`
+		Owner_      string `json:"_Owner,omitempty"`
 	} `json:"SecFilings"`
 	HeldOfficerPositions []struct {
 		ID            string `json:"Id"`
@@ -35,7 +35,7 @@ type InsiderTrades struct {
 	SecurityTransactionHoldings []struct {
 		ID                                string  `json:"Id"`
 		FromFiling                        string  `json:"FromFiling"`
-		_FromFiling                       string  `json:"_FromFiling,omitempty"`
+		FromFiling_                       string  `json:"_FromFiling,omitempty"`
 		EntryType                         int     `json:"EntryType"`
 		QuantityOwnedFollowingTransaction float64 `json:"QuantityOwnedFollowingTransaction"`
 		DirectIndirect                    int     `json:"DirectIndirect"`
@@ -65,5 +65,12 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.s.Receive(r.Context(), &entity.InsiderTrade{})
+	err := h.s.Receive(r.Context(), &entity.InsiderTrade{})
+
+	if err != nil {
+		h.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	h.Respond(w, r, http.StatusCreated, nil)
 }

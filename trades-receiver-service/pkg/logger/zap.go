@@ -14,7 +14,11 @@ func New() *Logger {
 	if err != nil {
 		log.Fatalf("Can't initialize logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			log.Println(err)
+		}
+	}()
 
 	return &Logger{logger.Sugar()}
 }

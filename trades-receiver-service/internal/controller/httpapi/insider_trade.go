@@ -79,5 +79,5 @@ func (h *handler) Respond(w http.ResponseWriter, r *http.Request, statusCode int
 
 func (h *handler) Error(w http.ResponseWriter, r *http.Request, statusCode int, err error) {
 	h.l.Info("Httpapi handler error:", err, "Status code:", statusCode, "request:", r)
-	h.Respond(w, r, statusCode, map[string]string{"error": err.Error()})
+	h.Respond(w, r, statusCode, nil)
 }

@@ -91,7 +91,7 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 	}
 
 	viper.AutomaticEnv()
-	viper.Unmarshal(&c.Postgres)
+	err = viper.Unmarshal(&c.Postgres)
 
 	if err != nil {
 		return err

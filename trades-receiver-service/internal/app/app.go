@@ -28,6 +28,9 @@ func Run(cfg *config.Config, l *logger.Logger) {
 	defer psql.Pool.Close()
 
 	kafka, err := kafka.New()
+	if err != nil {
+		l.Fatalf("internal.app.kafka.New: %v", err)
+	}
 
 	insiderTradeService := service.New(
 		repository.New(psql),
@@ -37,6 +40,10 @@ func Run(cfg *config.Config, l *logger.Logger) {
 	router := mux.NewRouter()
 
 	handler, err := httpapi.NewHandler(insiderTradeService, l)
+	if err != nil {
+		l.Fatalf("internal.app.httpapi.NewHandler: %v", err)
+	}
+
 	handler.Register(router)
 
 	httpServer := httpserver.New(router, cfg.Server.Port)
