@@ -1,5 +1,5 @@
 .env
 .idea
-aletheiaapi.info
 *.test
+logs.txt
 main

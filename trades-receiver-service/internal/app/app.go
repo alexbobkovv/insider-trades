@@ -2,21 +2,23 @@ package app
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"insidertradesreceiver/config"
-	"insidertradesreceiver/internal/controller/httpapi"
-	"insidertradesreceiver/internal/message"
-	"insidertradesreceiver/internal/repository"
-	"insidertradesreceiver/internal/service"
-	"insidertradesreceiver/pkg/httpserver"
-	"insidertradesreceiver/pkg/kafka"
-	"insidertradesreceiver/pkg/logger"
-	"insidertradesreceiver/pkg/postgresql"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/controller/httpapi"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/message"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/repository"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/httpserver"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/kafka"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
+
+	"github.com/gorilla/mux"
 )
 
 func Run(cfg *config.Config, l *logger.Logger) {

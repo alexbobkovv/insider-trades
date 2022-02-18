@@ -1,4 +1,4 @@
-module insidertradesreceiver
+module github.com/alexbobkovv/insider-trades/trades-receiver-service
 
 go 1.17
 

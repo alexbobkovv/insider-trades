@@ -1,9 +1,9 @@
 package main
 
 import (
-	"insidertradesreceiver/config"
-	"insidertradesreceiver/internal/app"
-	"insidertradesreceiver/pkg/logger"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/app"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 )
 
 func main() {

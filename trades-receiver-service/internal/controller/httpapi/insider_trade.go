@@ -4,13 +4,15 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"insidertradesreceiver/internal/service"
-	"insidertradesreceiver/pkg/logger"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
+
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -29,7 +31,7 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger) (*handler, 
 }
 
 func (h *handler) Register(router *mux.Router) http.Handler {
-	//router.HandleFunc(receiverURL, h.HandlePostTrades).Methods("POST")
+	// router.HandleFunc(receiverURL, h.HandlePostTrades).Methods("POST")
 	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST")
 	router.HandleFunc(tradesURL, h.HandleGetTrades).Methods("GET")
 	router.HandleFunc(rootURL, h.HandleHomePage).Methods("GET")
