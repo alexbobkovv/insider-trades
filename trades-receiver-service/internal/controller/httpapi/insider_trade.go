@@ -47,6 +47,7 @@ func (h *handler) HandleGetTrades(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// TODO implement method
 func (h *handler) HandlePostTrades(w http.ResponseWriter, r *http.Request) {
 	data, err := io.ReadAll(r.Body)
 	if err != nil {
