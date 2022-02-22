@@ -15,6 +15,6 @@ func New(broker *kafka.Kafka) *InsiderTradePublisher {
 	return &InsiderTradePublisher{broker}
 }
 
-func (p *InsiderTradePublisher) Publish(ctx context.Context, trade *entity.Transaction) error {
+func (p *InsiderTradePublisher) Publish(ctx context.Context, trade *entity.Trade) error {
 	return nil
 }

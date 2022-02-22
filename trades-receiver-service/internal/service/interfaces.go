@@ -8,16 +8,16 @@ import (
 
 type (
 	InsiderTrade interface {
-		Receive(ctx context.Context, trade *entity.Transaction) error
+		Receive(ctx context.Context, trade *entity.Trade) error
 		GetAll(ctx context.Context, limit, offset int) ([]*entity.Transaction, error)
 	}
 
 	InsiderTradeRepo interface {
-		Store(ctx context.Context, trade *entity.Transaction) error
+		StoreTrade(ctx context.Context, trade *entity.Trade) error
 		GetAll(ctx context.Context, limit, offset int) ([]*entity.Transaction, error)
 	}
 
 	InsiderTradePublisher interface {
-		Publish(ctx context.Context, trade *entity.Transaction) error
+		Publish(ctx context.Context, trade *entity.Trade) error
 	}
 )

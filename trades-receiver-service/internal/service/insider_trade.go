@@ -6,25 +6,41 @@ import (
 	"math"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 )
 
 type insiderTradeService struct {
 	repo      InsiderTradeRepo
 	publisher InsiderTradePublisher
+	l         *logger.Logger
 }
 
-func New(r InsiderTradeRepo, p InsiderTradePublisher) *insiderTradeService {
+func New(r InsiderTradeRepo, p InsiderTradePublisher, logger *logger.Logger) *insiderTradeService {
 	return &insiderTradeService{
 		repo:      r,
 		publisher: p,
+		l:         logger,
 	}
 }
 
-func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Transaction) error {
-	err := s.store(ctx, trade)
+func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) error {
+	var err error
+	trade.Trs, err = s.fillTransaction(trade.Sth)
 	if err != nil {
 		return err
 	}
+
+	err = s.store(ctx, trade)
+	if err != nil {
+		s.l.Error("failed to store trade: ", err)
+		return err
+	}
+
+	err = s.publisher.Publish(ctx, trade)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -32,8 +48,8 @@ func (s *insiderTradeService) GetAll(ctx context.Context, limit, offset int) ([]
 	return []*entity.Transaction{{}}, nil
 }
 
-// TODO change to private, cover cases with derivatives
-func (s *insiderTradeService) FillTransaction(secFilings *entity.SecFiling, securityHoldings []*entity.SecurityTransactionHoldings) (*entity.Transaction, error) {
+// TODO cover cases with derivatives
+func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.SecurityTransactionHoldings) (*entity.Transaction, error) {
 
 	const (
 		purchaseCode = 0
@@ -82,7 +98,6 @@ func (s *insiderTradeService) FillTransaction(secFilings *entity.SecFiling, secu
 	}
 
 	transaction := &entity.Transaction{
-		SecFilingsID:        secFilings.ID,
 		TransactionTypeName: transactionName,
 		AveragePrice:        averagePrice,
 		TotalShares:         totalShares,
@@ -92,8 +107,8 @@ func (s *insiderTradeService) FillTransaction(secFilings *entity.SecFiling, secu
 	return transaction, nil
 }
 
-func (s *insiderTradeService) store(ctx context.Context, trade *entity.Transaction) error {
-	err := s.repo.Store(ctx, trade)
+func (s *insiderTradeService) store(ctx context.Context, trade *entity.Trade) error {
+	err := s.repo.StoreTrade(ctx, trade)
 	if err != nil {
 		return err
 	}

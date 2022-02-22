@@ -60,7 +60,7 @@ type (
 
 	InsiderTrades struct {
 		SecEntities                 *[]SecEntity                  `json:"SecEntities"`
-		SecFilings                  *[]SecFiling                  `json:"SecFiling"`
+		SecFilings                  *[]SecFiling                  `json:"SecFilings"`
 		HeldOfficerPositions        *[]HeldOfficerPosition        `json:"HeldOfficerPositions,omitempty"`
 		SecurityTransactionHoldings *[]SecurityTransactionHolding `json:"SecurityTransactionHoldings"`
 	}
@@ -91,7 +91,7 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(*trades.SecFilings) != 1 {
-		h.l.Info("receiveTrades handler: failed to receive sec filing: ", "empty or more than one filing", "\nrequest body: ", r.Body)
+		h.l.Info("receiveTrades handler: failed to receive sec filing: ", "empty or more than one filing, ", "request body: ", r.Body)
 		h.Respond(w, r, http.StatusCreated, nil)
 		return
 	}
@@ -100,6 +100,10 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 
 	trade.SecF = h.fillSecFiling(sFiling, trades.HeldOfficerPositions)
 	trade.Sth = h.fillSecurityTransactionHoldings(trades.SecurityTransactionHoldings)
+
+	if err := h.s.Receive(r.Context(), &trade); err != nil {
+		h.l.Error("service receive, failed to receive trade: ", err, " request body: ", r.Body)
+	}
 
 	h.Respond(w, r, http.StatusCreated, nil)
 }

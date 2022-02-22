@@ -35,8 +35,9 @@ func Run(cfg *config.Config, l *logger.Logger) {
 	}
 
 	insiderTradeService := service.New(
-		repository.New(psql),
+		repository.New(psql, l),
 		message.New(kafka),
+		l,
 	)
 
 	router := mux.NewRouter()

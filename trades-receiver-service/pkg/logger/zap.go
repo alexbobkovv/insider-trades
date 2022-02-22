@@ -21,5 +21,6 @@ func New() *Logger {
 		}
 	}()
 
+	// return &Logger{logger.Sugar()}
 	return &Logger{logger.Sugar()}
 }

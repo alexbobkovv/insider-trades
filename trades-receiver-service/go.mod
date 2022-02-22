@@ -6,15 +6,18 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.14.1
 	go.uber.org/zap v1.20.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
-require github.com/spf13/viper v1.10.1
+require (
+	github.com/jackc/pgx v3.6.2+incompatible
+	github.com/spf13/viper v1.10.1
+)
 
 require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -26,6 +29,7 @@ require (
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
