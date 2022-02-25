@@ -2,78 +2,132 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
+	"github.com/go-playground/validator"
 )
 
 type (
 	SecEntity struct {
-		Cik           *int    `json:"Cik"`
-		Name          *string `json:"Name"`
+		Cik           *int    `json:"Cik" validate:"required"`
+		Name          *string `json:"Name" validate:"required"`
 		TradingSymbol *string `json:"TradingSymbol"`
 	}
 
 	SecFiling struct {
 		ID          *string `json:"Id"`
-		FilingURL   *string `json:"FilingUrl"`
+		FilingURL   *string `json:"FilingUrl" validate:"required"`
 		AccessionP1 *int    `json:"AccessionP1"`
 		AccessionP2 *int    `json:"AccessionP2"`
 		AccessionP3 *int    `json:"AccessionP3"`
 		FilingType  *int    `json:"FilingType"`
-		ReportedOn  *string `json:"ReportedOn"`
-		Issuer      *int    `json:"Issuer"`
-		Issuer_     *string `json:"_Issuer,omitempty"`
-		Owner       *int    `json:"Owner"`
-		Owner_      *string `json:"_Owner,omitempty"`
+		ReportedOn  *string `json:"ReportedOn" validate:"required"`
+		Issuer      *int    `json:"Issuer" validate:"required"`
+		Issuer_     *string `json:"_Issuer"`
+		Owner       *int    `json:"Owner" validate:"required"`
+		Owner_      *string `json:"_Owner"`
 	}
 
 	HeldOfficerPosition struct {
 		ID            *string `json:"Id"`
-		Officer       *int    `json:"Officer"`
-		Company       *int    `json:"Company"`
-		PositionTitle *string `json:"PositionTitle"`
+		Officer       *int    `json:"Officer" validate:"required"`
+		Company       *int    `json:"Company" validate:"required"`
+		PositionTitle *string `json:"PositionTitle" validate:"required"`
 		ObservedOn    *string `json:"ObservedOn"`
 	}
 
 	SecurityTransactionHolding struct {
 		ID                                *string  `json:"Id"`
 		FromFiling                        *string  `json:"FromFiling"`
-		FromFiling_                       *string  `json:"_FromFiling,omitempty"`
-		EntryType                         *int     `json:"EntryType"`
+		FromFiling_                       *string  `json:"_FromFiling"`
+		EntryType                         *int     `json:"EntryType" validate:"required"`
 		QuantityOwnedFollowingTransaction *float64 `json:"QuantityOwnedFollowingTransaction"`
 		DirectIndirect                    *int     `json:"DirectIndirect"`
-		SecurityTitle                     *string  `json:"SecurityTitle"`
+		SecurityTitle                     *string  `json:"SecurityTitle" validate:"required"`
 		SecurityType                      *int     `json:"SecurityType"`
-		AcquiredDisposed                  *int     `json:"AcquiredDisposed,omitempty"`
-		Quantity                          *float64 `json:"Quantity,omitempty"`
-		PricePerSecurity                  *float64 `json:"PricePerSecurity,omitempty"`
-		TransactionDate                   *string  `json:"TransactionDate,omitempty"`
-		TransactionCode                   *int     `json:"TransactionCode,omitempty"`
-		ConversionOrExercisePrice         *float64 `json:"ConversionOrExercisePrice,omitempty"`
-		ExercisableDate                   *string  `json:"ExercisableDate,omitempty"`
-		ExpirationDate                    *string  `json:"ExpirationDate,omitempty"`
-		UnderlyingSecurityTitle           *string  `json:"UnderlyingSecurityTitle,omitempty"`
-		UnderlyingSecurityQuantity        *float64 `json:"UnderlyingSecurityQuantity,omitempty"`
+		AcquiredDisposed                  *int     `json:"AcquiredDisposed"`
+		Quantity                          *float64 `json:"Quantity" validate:"required"`
+		PricePerSecurity                  *float64 `json:"PricePerSecurity" validate:"required"`
+		TransactionDate                   *string  `json:"TransactionDate" validate:"required"`
+		TransactionCode                   *int     `json:"TransactionCode" validate:"required"`
+		ConversionOrExercisePrice         *float64 `json:"ConversionOrExercisePrice"`
+		ExercisableDate                   *string  `json:"ExercisableDate"`
+		ExpirationDate                    *string  `json:"ExpirationDate"`
+		UnderlyingSecurityTitle           *string  `json:"UnderlyingSecurityTitle"`
+		UnderlyingSecurityQuantity        *float64 `json:"UnderlyingSecurityQuantity"`
 	}
 
 	InsiderTrades struct {
-		SecEntities                 *[]SecEntity                  `json:"SecEntities"`
-		SecFilings                  *[]SecFiling                  `json:"SecFilings"`
-		HeldOfficerPositions        *[]HeldOfficerPosition        `json:"HeldOfficerPositions,omitempty"`
-		SecurityTransactionHoldings *[]SecurityTransactionHolding `json:"SecurityTransactionHoldings"`
+		SecEntities                 *[]SecEntity                  `json:"SecEntities" validate:"dive,required"`
+		SecFilings                  *[]SecFiling                  `json:"SecFiling" validate:"dive,required"`
+		HeldOfficerPositions        *[]HeldOfficerPosition        `json:"HeldOfficerPositions"`
+		SecurityTransactionHoldings *[]SecurityTransactionHolding `json:"SecurityTransactionHoldings" validate:"dive,required"`
 	}
 )
+
+func (h *handler) validateTrades(trades *InsiderTrades) error {
+	if trades == nil {
+		return errors.New("validateTrades: expected non nil trades struct")
+	}
+
+	v := validator.New()
+	err := v.Struct(trades)
+
+	if err != nil {
+		// Validation syntax error
+		if err, ok := err.(*validator.InvalidValidationError); ok {
+			return fmt.Errorf("validateTrades: validation syntax error: %w", err)
+		}
+
+		validationErrors := make([]string, 0)
+
+		for _, validationError := range err.(validator.ValidationErrors) {
+
+			switch validationError.Tag() {
+			case "required":
+				validationErrors = append(validationErrors, fmt.Sprintf("%s is a required field", validationError.Field()))
+			case "max":
+				validationErrors = append(validationErrors, fmt.Sprintf("%s must be a maximum of %s in length", validationError.Field(), validationError.Param()))
+			case "url":
+				validationErrors = append(validationErrors, fmt.Sprintf("%s must be a valid URL", validationError.Field()))
+			default:
+				validationErrors = append(validationErrors, fmt.Sprintf("something wrong on %s; %s", validationError.Field(), validationError.Tag()))
+			}
+		}
+
+		return fmt.Errorf("validateTrades: validation errors: %v", strings.Join(validationErrors, ", "))
+
+	}
+
+	if len(*trades.SecFilings) != 1 {
+		return errors.New("validateTrades: failed to validate sec filing: empty or more than one filing")
+	}
+
+	return nil
+}
 
 func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var trades InsiderTrades
-	defer r.Body.Close()
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			h.l.Errorf("receiveTrades: failed to close body: %v", err)
+		}
+	}()
 
 	if err := json.NewDecoder(r.Body).Decode(&trades); err != nil {
 		h.l.Info("receiveTrades handler: failed to decode json to struct: ", err, "\nrequest body: ", r.Body)
+		h.Respond(w, r, http.StatusCreated, nil)
+		return
+	}
+
+	if err := h.validateTrades(&trades); err != nil {
+		h.l.Errorf("receiveTrades handler: failed to validate trades struct: %v", err)
 		h.Respond(w, r, http.StatusCreated, nil)
 		return
 	}
@@ -90,19 +144,20 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if len(*trades.SecFilings) != 1 {
-		h.l.Info("receiveTrades handler: failed to receive sec filing: ", "empty or more than one filing, ", "request body: ", r.Body)
-		h.Respond(w, r, http.StatusCreated, nil)
-		return
-	}
-
 	sFiling := &(*trades.SecFilings)[0]
 
 	trade.SecF = h.fillSecFiling(sFiling, trades.HeldOfficerPositions)
-	trade.Sth = h.fillSecurityTransactionHoldings(trades.SecurityTransactionHoldings)
+
+	var err error
+	trade.Sth, err = h.fillSecurityTransactionHoldings(trades.SecurityTransactionHoldings)
+	if err != nil {
+		h.l.Errorf("receiveTrades: %v", err)
+	}
 
 	if err := h.s.Receive(r.Context(), &trade); err != nil {
-		h.l.Error("service receive, failed to receive trade: ", err, " request body: ", r.Body)
+		h.l.Error("receiveTrades: ", err, " request body: ", r.Body)
+		h.Respond(w, r, http.StatusCreated, nil)
+		return
 	}
 
 	h.Respond(w, r, http.StatusCreated, nil)
@@ -144,10 +199,15 @@ func (h *handler) fillSecFiling(sFiling *SecFiling, positions *[]HeldOfficerPosi
 	}
 }
 
-func (h *handler) fillSecurityTransactionHoldings(holdings *[]SecurityTransactionHolding) []*entity.SecurityTransactionHoldings {
+func (h *handler) fillSecurityTransactionHoldings(holdings *[]SecurityTransactionHolding) ([]*entity.SecurityTransactionHoldings, error) {
 	var holdingEntities []*entity.SecurityTransactionHoldings
 
 	for _, holding := range *holdings {
+		if holding.SecurityTitle == nil || holding.Quantity == nil ||
+			holding.PricePerSecurity == nil || holding.TransactionDate == nil ||
+			holding.TransactionCode == nil {
+			continue
+		}
 		holdingEntities = append(holdingEntities, &entity.SecurityTransactionHoldings{
 			QuantityOwnedFollowingTransaction: holding.QuantityOwnedFollowingTransaction,
 			SecurityTitle:                     *holding.SecurityTitle,
@@ -160,5 +220,9 @@ func (h *handler) fillSecurityTransactionHoldings(holdings *[]SecurityTransactio
 
 	}
 
-	return holdingEntities
+	if len(holdingEntities) == 0 {
+		return nil, errors.New("fillSecurityTransactionHoldings: expected more than 0 holding entities")
+	}
+
+	return holdingEntities, nil
 }

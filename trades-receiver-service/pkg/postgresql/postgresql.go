@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -14,7 +15,7 @@ func New(url string) (*Postgres, error) {
 	pool, err := pgxpool.Connect(context.Background(), url)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("postgresql: failed to connect to db: %w", err)
 	}
 
 	return &Postgres{Pool: pool}, nil

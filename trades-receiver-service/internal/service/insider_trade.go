@@ -3,42 +3,40 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 )
 
 type insiderTradeService struct {
 	repo      InsiderTradeRepo
 	publisher InsiderTradePublisher
-	l         *logger.Logger
 }
 
-func New(r InsiderTradeRepo, p InsiderTradePublisher, logger *logger.Logger) *insiderTradeService {
+func New(r InsiderTradeRepo, p InsiderTradePublisher) *insiderTradeService {
 	return &insiderTradeService{
 		repo:      r,
 		publisher: p,
-		l:         logger,
 	}
 }
 
 func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) error {
 	var err error
+	const methodName = "(s *insiderTradeService) Receive"
 	trade.Trs, err = s.fillTransaction(trade.Sth)
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: %w", methodName, err)
 	}
 
 	err = s.store(ctx, trade)
 	if err != nil {
-		s.l.Error("failed to store trade: ", err)
-		return err
+		return fmt.Errorf("%v: failed to store trade: %w", methodName, err)
 	}
 
 	err = s.publisher.Publish(ctx, trade)
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: %w", methodName, err)
 	}
 
 	return nil
@@ -78,7 +76,7 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 	}
 
 	if totalNonDerivative == 0 {
-		return nil, errors.New("failed to match transaction code")
+		return nil, errors.New("fill transaction: failed to match transaction code: derivative only transactions")
 	}
 
 	averagePrice = totalPrice / totalNonDerivative
@@ -110,7 +108,7 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 func (s *insiderTradeService) store(ctx context.Context, trade *entity.Trade) error {
 	err := s.repo.StoreTrade(ctx, trade)
 	if err != nil {
-		return err
+		return fmt.Errorf("store: %w", err)
 	}
 
 	return nil

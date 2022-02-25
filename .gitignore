@@ -1,5 +1,7 @@
 .env
 .idea
 *.test
-logs.txt
 main
+
+trades-receiver-service.log
+logs.txt

@@ -5,29 +5,28 @@ import (
 	"fmt"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
 	"github.com/jackc/pgx/v4"
 )
 
 type InsiderTradeRepo struct {
 	*postgresql.Postgres
-	l *logger.Logger
 }
 
-func New(db *postgresql.Postgres, logger *logger.Logger) *InsiderTradeRepo {
-	return &InsiderTradeRepo{db, logger}
+func New(db *postgresql.Postgres) *InsiderTradeRepo {
+	return &InsiderTradeRepo{db}
 }
 
-func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) error {
+func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) (err error) {
+	const methodName = "(r *InsiderTradeRepo) StoreTrade"
 
 	tx, err := r.Pool.Begin(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to begin transaction: %w", methodName, err)
 	}
 	defer func() {
-		if err := tx.Rollback(ctx); err != nil && err != pgx.ErrTxClosed {
-			r.l.Error("transaction failed: ", err)
+		if tempErr := tx.Rollback(ctx); tempErr != nil && tempErr != pgx.ErrTxClosed {
+			err = tempErr
 		}
 	}()
 
@@ -49,7 +48,7 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 	err = tx.QueryRow(ctx, insiderInsertQuery, trade.Ins.Cik, trade.Ins.Name).Scan(&trade.Ins.ID)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to query insert insider: %w", methodName, err)
 	}
 
 	const companyInsertQuery = `
@@ -72,7 +71,7 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 		trade.Cmp.Name, trade.Cmp.Ticker).Scan(&trade.Cmp.ID)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to query insert company: %w", methodName, err)
 	}
 
 	trade.SecF.InsiderID = trade.Ins.ID
@@ -88,7 +87,7 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 		trade.SecF.ReportedOn).Scan(&trade.SecF.ID)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to query insert sec_filings: %w", methodName, err)
 	}
 
 	const transactionInsertQuery = `
@@ -102,7 +101,7 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 		trade.Trs.TotalValue).Scan(&trade.Trs.ID)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to query insert transaction: %w", methodName, err)
 	}
 
 	const securityTransactionHoldingsInsertQuery = `
@@ -130,18 +129,18 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 
 		err = br.QueryRow().Scan(&sthId)
 		if err != nil {
-			return err
+			return fmt.Errorf("%v: failed to query batch id: %w", methodName, err)
 		}
 
 		sthIDs = append(sthIDs, sthId)
 	}
 
 	if err = br.Close(); err != nil {
-		return err
+		return fmt.Errorf("%v: failed to close batch: %w", methodName, err)
 	}
 
 	if len(sthIDs) != len(trade.Sth) {
-		return fmt.Errorf("the length of the ids array from db doesn't match trade.Sth")
+		return fmt.Errorf("%v: the length of the ids array from db doesn't match trade.Sth", methodName)
 	}
 
 	for i := 0; i < len(trade.Sth); i++ {
@@ -150,7 +149,7 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("%v: failed to commit transaction: %w", methodName, err)
 	}
 
 	return nil

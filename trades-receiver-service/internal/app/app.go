@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,32 +22,33 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Run(cfg *config.Config, l *logger.Logger) {
+func Run(cfg *config.Config) {
+
+	l, err := logger.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
+	if err != nil {
+		log.Println("app: failed to initialize logger")
+	}
+	l.Info("app: logger initialized")
 
 	psql, err := postgresql.New(cfg.Postgres.URL)
 	if err != nil {
-		l.Fatalf("internal.app.postgresql.New: %v", err)
+		l.Fatalf("app: postgresql.New: %v", err)
 	}
 	defer psql.Pool.Close()
 
-	kafka, err := kafka.New()
+	kfk, err := kafka.New()
 	if err != nil {
-		l.Fatalf("internal.app.kafka.New: %v", err)
+		l.Fatalf("app: kafka.New: %v", err)
 	}
 
 	insiderTradeService := service.New(
-		repository.New(psql, l),
-		message.New(kafka),
-		l,
+		repository.New(psql),
+		message.New(kfk),
 	)
 
 	router := mux.NewRouter()
 
-	handler, err := httpapi.NewHandler(insiderTradeService, l)
-	if err != nil {
-		l.Fatalf("internal.app.httpapi.NewHandler: %v", err)
-	}
-
+	handler := httpapi.NewHandler(insiderTradeService, l)
 	handler.Register(router)
 
 	httpServer := httpserver.New(router, cfg.Server.Port)
@@ -56,28 +58,25 @@ func Run(cfg *config.Config, l *logger.Logger) {
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM)
 
 	go func() {
-		l.Infof("Server is running on %v", cfg.Port)
+		l.Infof("app: server is running on %v", cfg.Port)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			l.Fatalf("Faild to start server: %v", err)
+			l.Fatalf("app: faild to start server: %v", err)
 		}
 	}()
 
 	// Waiting for shutdown signal
 	sysSignal := <-signalChan
-	l.Infof("Got signal %v, shutting down..", sysSignal)
+	l.Infof("app: got signal %v, shutting down..", sysSignal)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-
 	defer func() {
 		cancel()
 	}()
 
 	httpServer.SetKeepAlivesEnabled(false)
-
 	if err := httpServer.Shutdown(ctx); err != nil {
-		l.Fatalf("Error: %v", err)
+		l.Fatalf("app: %v", err)
 	}
 
-	l.Info("Successful shutdown")
-
+	l.Info("app: successful shutdown")
 }

@@ -3,3 +3,7 @@ app:
   version: '1.0.0'
 server:
   port: ':8080'
+logger:
+  level: 'debug'
+  format: 'console'
+  filepath: './trades-receiver-service.log'

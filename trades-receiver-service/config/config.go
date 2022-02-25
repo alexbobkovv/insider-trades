@@ -9,6 +9,7 @@ type (
 		App      `yaml:"app"`
 		Server   `yaml:"server"`
 		Postgres `yaml:"postgres"`
+		Logger   `yaml:"logger"`
 	}
 
 	App struct {
@@ -22,6 +23,12 @@ type (
 
 	Postgres struct {
 		URL string `mapstructure:"POSTGRES_URL"`
+	}
+
+	Logger struct {
+		Level    string `yaml:"level"`
+		Format   string `yaml:"format"`
+		Filepath string `yaml:"filepath"`
 	}
 )
 
