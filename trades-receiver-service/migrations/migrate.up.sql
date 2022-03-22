@@ -70,3 +70,5 @@ CREATE TABLE security_transaction_holdings
             REFERENCES sec_filings (id)
             ON DELETE CASCADE
 );
+
+CREATE INDEX idx_transaction_pagination ON transaction (created_at);

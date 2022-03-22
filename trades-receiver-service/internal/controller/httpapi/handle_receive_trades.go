@@ -20,7 +20,7 @@ type (
 
 	SecFiling struct {
 		ID          *string `json:"Id"`
-		FilingURL   *string `json:"FilingUrl" validate:"required"`
+		FilingURL   *string `json:"FilingUrl" validate:"required,url"`
 		AccessionP1 *int    `json:"AccessionP1"`
 		AccessionP2 *int    `json:"AccessionP2"`
 		AccessionP3 *int    `json:"AccessionP3"`

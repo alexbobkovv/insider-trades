@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"time"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
@@ -155,6 +157,71 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 	return nil
 }
 
-func (r *InsiderTradeRepo) GetAll(ctx context.Context, limit, offset int) ([]*entity.Transaction, error) {
-	return []*entity.Transaction{{}}, nil
+func (r *InsiderTradeRepo) decodeTimestampCursor(encodedCursor string) (*time.Time, error) {
+	b, err := base64.StdEncoding.DecodeString(encodedCursor)
+	if err != nil {
+		return nil, fmt.Errorf("decodeTimestampCursor: failed to decode cursor: %w", err)
+	}
+
+	timestamp, err := time.Parse(time.RFC3339Nano, string(b))
+	if err != nil {
+		return nil, fmt.Errorf("decodeTimestampCursor: failed parse timestamp: %w", err)
+	}
+
+	return &timestamp, nil
+}
+
+// TODO encoder
+// func (r *InsiderTradeRepo) encodeTimestampCursor(decodedCursor string) {
+//
+// }
+
+func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, error) {
+	const methodName = "(r *InsiderTradeRepo) GetAll"
+
+	var decodedCursor *time.Time
+	if cursor == "" {
+		decodedCursor = &time.Time{}
+	} else {
+		var err error
+		decodedCursor, err = r.decodeTimestampCursor(cursor)
+
+		if err != nil {
+			return nil, fmt.Errorf("%v: invalid cursor: %w", methodName, err)
+		}
+	}
+
+	const transactionSelectQuery = `
+		SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
+		FROM transaction
+		WHERE created_at > $1 :: timestamptz
+		ORDER BY created_at DESC
+		LIMIT $2`
+
+	rows, err := r.Pool.Query(ctx, transactionSelectQuery, *decodedCursor, limit)
+
+	if err != nil {
+		return nil, fmt.Errorf("%v: %w", methodName, err)
+	}
+
+	var transactions []*entity.Transaction
+
+	for rows.Next() {
+		var transaction *entity.Transaction
+		err = rows.Scan(
+			&transaction.ID,
+			&transaction.SecFilingsID,
+			&transaction.TransactionTypeName,
+			&transaction.AveragePrice,
+			&transaction.TotalShares,
+			&transaction.TotalValue,
+			&transaction.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("%v: %w", methodName, err)
+		}
+		transactions = append(transactions, transaction)
+	}
+
+	return transactions, nil
 }

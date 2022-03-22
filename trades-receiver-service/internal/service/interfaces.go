@@ -1,3 +1,4 @@
+//go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package service
 package service
 
 import (
@@ -9,12 +10,12 @@ import (
 type (
 	InsiderTrade interface {
 		Receive(ctx context.Context, trade *entity.Trade) error
-		GetAll(ctx context.Context, limit, offset int) ([]*entity.Transaction, error)
+		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error)
 	}
 
 	InsiderTradeRepo interface {
 		StoreTrade(ctx context.Context, trade *entity.Trade) error
-		GetAll(ctx context.Context, limit, offset int) ([]*entity.Transaction, error)
+		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, error)
 	}
 
 	InsiderTradePublisher interface {

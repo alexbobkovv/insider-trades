@@ -28,7 +28,7 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger) *handler {
 
 func (h *handler) Register(router *mux.Router) http.Handler {
 	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST")
-	router.HandleFunc(tradesURL, h.HandleGetTrades).Methods("GET")
+	router.HandleFunc(tradesURL, h.getAllTrades).Methods("GET")
 	router.HandleFunc(rootURL, h.HandleHomePage).Methods("GET")
 
 	return router
@@ -36,10 +36,6 @@ func (h *handler) Register(router *mux.Router) http.Handler {
 
 func (h *handler) HandleHomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Under Construction")
-}
-
-func (h *handler) HandleGetTrades(w http.ResponseWriter, r *http.Request) {
-
 }
 
 func (h *handler) Respond(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}) {
