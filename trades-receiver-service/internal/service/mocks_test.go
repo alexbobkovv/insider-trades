@@ -89,12 +89,13 @@ func (m *MockInsiderTradeRepo) EXPECT() *MockInsiderTradeRepoMockRecorder {
 }
 
 // GetAll mocks base method.
-func (m *MockInsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, error) {
+func (m *MockInsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAll", ctx, cursor, limit)
 	ret0, _ := ret[0].([]*entity.Transaction)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetAll indicates an expected call of GetAll.

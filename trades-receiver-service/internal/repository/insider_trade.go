@@ -172,43 +172,55 @@ func (r *InsiderTradeRepo) decodeTimestampCursor(encodedCursor string) (*time.Ti
 }
 
 // TODO encoder
-// func (r *InsiderTradeRepo) encodeTimestampCursor(decodedCursor string) {
-//
-// }
+func (r *InsiderTradeRepo) encodeTimestampCursor(decodedCursor time.Time) string {
+	return base64.StdEncoding.EncodeToString([]byte(decodedCursor.Format(time.RFC3339Nano)))
+}
 
-func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, error) {
+func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error) {
 	const methodName = "(r *InsiderTradeRepo) GetAll"
 
-	var decodedCursor *time.Time
+	var rows pgx.Rows
 	if cursor == "" {
-		decodedCursor = &time.Time{}
-	} else {
+		const transactionSelectQuery = `
+			SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
+			FROM transaction
+			ORDER BY created_at DESC
+			LIMIT $1`
+
 		var err error
-		decodedCursor, err = r.decodeTimestampCursor(cursor)
+		rows, err = r.Pool.Query(ctx, transactionSelectQuery, limit)
 
 		if err != nil {
-			return nil, fmt.Errorf("%v: invalid cursor: %w", methodName, err)
+			return nil, "", fmt.Errorf("%v: %w", methodName, err)
 		}
-	}
 
-	const transactionSelectQuery = `
-		SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
-		FROM transaction
-		WHERE created_at > $1 :: timestamptz
-		ORDER BY created_at DESC
-		LIMIT $2`
+	} else {
+		var err error
+		decodedCursor, err := r.decodeTimestampCursor(cursor)
 
-	rows, err := r.Pool.Query(ctx, transactionSelectQuery, *decodedCursor, limit)
+		if err != nil {
+			return nil, "", fmt.Errorf("%v: invalid cursor: %w", methodName, err)
+		}
 
-	if err != nil {
-		return nil, fmt.Errorf("%v: %w", methodName, err)
+		const transactionSelectCursorQuery = `
+			SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
+			FROM transaction
+			WHERE created_at < $1 :: timestamptz
+			ORDER BY created_at DESC
+			LIMIT $2`
+
+		rows, err = r.Pool.Query(ctx, transactionSelectCursorQuery, *decodedCursor, limit)
+
+		if err != nil {
+			return nil, "", fmt.Errorf("%v: %w", methodName, err)
+		}
 	}
 
 	var transactions []*entity.Transaction
 
 	for rows.Next() {
-		var transaction *entity.Transaction
-		err = rows.Scan(
+		var transaction entity.Transaction
+		err := rows.Scan(
 			&transaction.ID,
 			&transaction.SecFilingsID,
 			&transaction.TransactionTypeName,
@@ -218,10 +230,17 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 			&transaction.CreatedAt,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("%v: %w", methodName, err)
+			return nil, "", fmt.Errorf("%v: %w", methodName, err)
 		}
-		transactions = append(transactions, transaction)
+		transactions = append(transactions, &transaction)
 	}
 
-	return transactions, nil
+	var nextCursor string
+
+	if len(transactions) > 0 {
+		cursorTimestamp := transactions[len(transactions)-1].CreatedAt
+		nextCursor = r.encodeTimestampCursor(cursorTimestamp)
+	}
+
+	return transactions, nextCursor, nil
 }

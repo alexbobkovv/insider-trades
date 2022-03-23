@@ -44,15 +44,9 @@ func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) 
 
 // TODO refactor and test
 func (s *insiderTradeService) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error) {
-	transactions, err := s.repo.GetAll(ctx, cursor, limit)
+	transactions, nextCursor, err := s.repo.GetAll(ctx, cursor, limit)
 	if err != nil {
 		return nil, "", fmt.Errorf("(s *insiderTradeService) GetAll: %w", err)
-	}
-
-	var nextCursor string
-
-	if len(transactions) > 0 {
-		nextCursor = transactions[len(transactions)-1].CreatedAt.String()
 	}
 
 	return transactions, nextCursor, nil

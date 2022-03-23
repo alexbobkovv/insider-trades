@@ -15,7 +15,7 @@ type (
 
 	InsiderTradeRepo interface {
 		StoreTrade(ctx context.Context, trade *entity.Trade) error
-		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, error)
+		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error)
 	}
 
 	InsiderTradePublisher interface {

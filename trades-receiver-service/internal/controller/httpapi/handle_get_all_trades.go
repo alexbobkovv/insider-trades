@@ -23,7 +23,7 @@ func (h *handler) getAllTrades(w http.ResponseWriter, r *http.Request) {
 	var limit int
 	limits, present := queryParams["limit"]
 	if !present || len(limits) != 1 {
-		limit = 10
+		limit = 20
 	} else {
 		limitInt, err := strconv.Atoi(limits[0])
 		if err != nil {
