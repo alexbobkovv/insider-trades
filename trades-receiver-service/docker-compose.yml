@@ -6,16 +6,37 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-    environment:
-      POSTGRES_URL: postgres://trades_receiver:defaultpass@localhost:5432/trades
+    env_file: .env
     ports:
       - "8080:8080"
     depends_on:
-      - "db"
+      - postgres
+    links:
+      - postgres
 
-  db:
-    image: postgres:14.2-alpine
-    environment:
-      POSTGRES_USER: "trades_receiver"
-      POSTGRES_PASSWORD: "defaultpass"
-      POSTGRES_DB: 'postgres'
+  postgres:
+    container_name: postgres
+    image: postgres:14
+    restart: always
+    volumes:
+      - data:/var/lib/postgresql/data
+#    environment:
+#      POSTGRES_USER: trades_receiver
+#      POSTGRES_PASSWORD: defaultpass
+#      POSTGRES_DB: trades
+    env_file: .env
+    ports:
+      - "5432:5432"
+
+  migrate:
+    profiles: ["tools"]
+    image: migrate/migrate
+    entrypoint: "migrate -database trades_receiver:defaultpass@localhost:5432/trade -path /migrations"
+    command: up
+    links:
+      - postgres
+    volumes:
+      - ./migrations:/migrations
+
+volumes:
+  data:
