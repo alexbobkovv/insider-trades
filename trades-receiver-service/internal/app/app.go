@@ -30,7 +30,6 @@ func Run(cfg *config.Config) {
 	}
 	l.Info("app: logger initialized")
 
-	l.Info("postgres url: ", cfg.Postgres.URL)
 	psql, err := postgresql.New(cfg.Postgres.URL)
 	if err != nil {
 		l.Fatalf("app: postgresql.New: %v", err)

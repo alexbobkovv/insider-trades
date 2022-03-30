@@ -7,7 +7,7 @@ RUN go mod download
 
 FROM golang:1.17.6-alpine3.15 AS builder
 
-COPY --from=modules /go/pkg /usr/go/pkg
+COPY --from=modules /go/pkg /go/pkg
 WORKDIR /usr/go/src/build
 COPY . .
 
