@@ -1,0 +1,68 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  entity.Transaction:
+    properties:
+      averagePrice:
+        type: number
+      createdAt:
+        type: string
+      id:
+        type: string
+      secFilingsID:
+        type: string
+      totalShares:
+        type: integer
+      totalValue:
+        type: number
+      transactionTypeName:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Receives insider trades sec forms from external api and serves out
+    structured trades information
+  title: Insider-trades trades-receiver API
+  version: "1.0"
+paths:
+  /trades/api/v1:
+    get:
+      consumes:
+      - application/json
+      description: Get all transactions objects with cursor pagination
+      operationId: getAllTransactions
+      parameters:
+      - description: pagination
+        in: path
+        name: cursor
+        type: string
+      - description: limit
+        in: path
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "404":
+          description: Not Found
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            type: integer
+      summary: Get all transactions
+      tags:
+      - trades
+produces:
+- application/json
+schemes:
+- http
+- https
+swagger: "2.0"

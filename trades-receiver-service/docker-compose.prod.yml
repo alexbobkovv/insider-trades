@@ -34,15 +34,5 @@ services:
     volumes:
       - ./migrations:/migrations
 
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: swagger_ui
-    ports:
-      - "80:8080"
-    volumes:
-      - ./docs:/usr/share/nginx/html/doc
-    environment:
-      API_URL: doc/swagger.yaml
-
 volumes:
   data:

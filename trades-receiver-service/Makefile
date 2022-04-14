@@ -12,6 +12,8 @@ migrate-up:
 	docker-compose --profile tools run migrate up
 migrate-down:
 	docker-compose --profile tools run migrate down
+swag:
+	swag init -g internal/controller/httpapi/insider_trade.go
 
 .DEFAULT_GOAL := build
 

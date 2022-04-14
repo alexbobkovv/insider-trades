@@ -1,0 +1,101 @@
+{
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ],
+    "schemes": [
+        "http",
+        "https"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Receives insider trades sec forms from external api and serves out structured trades information",
+        "title": "Insider-trades trades-receiver API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/trades/api/v1": {
+            "get": {
+                "description": "Get all transactions objects with cursor pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trades"
+                ],
+                "summary": "Get all transactions",
+                "operationId": "getAllTransactions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "pagination",
+                        "name": "cursor",
+                        "in": "path"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.Transaction"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.Transaction": {
+            "type": "object",
+            "properties": {
+                "averagePrice": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "secFilingsID": {
+                    "type": "string"
+                },
+                "totalShares": {
+                    "type": "integer"
+                },
+                "totalValue": {
+                    "type": "number"
+                },
+                "transactionTypeName": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -1,9 +1,11 @@
 package httpapi
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -18,7 +20,7 @@ type (
 		TradingSymbol *string `json:"TradingSymbol"`
 	}
 
-	SecFiling struct {
+	SecFilings struct {
 		ID          *string `json:"Id"`
 		FilingURL   *string `json:"FilingUrl" validate:"required,url"`
 		AccessionP1 *int    `json:"AccessionP1"`
@@ -44,16 +46,16 @@ type (
 		ID                                *string  `json:"Id"`
 		FromFiling                        *string  `json:"FromFiling"`
 		FromFiling_                       *string  `json:"_FromFiling"`
-		EntryType                         *int     `json:"EntryType" validate:"required"`
+		EntryType                         *int     `json:"EntryType"`
 		QuantityOwnedFollowingTransaction *float64 `json:"QuantityOwnedFollowingTransaction"`
 		DirectIndirect                    *int     `json:"DirectIndirect"`
-		SecurityTitle                     *string  `json:"SecurityTitle" validate:"required"`
+		SecurityTitle                     *string  `json:"SecurityTitle"`
 		SecurityType                      *int     `json:"SecurityType"`
 		AcquiredDisposed                  *int     `json:"AcquiredDisposed"`
-		Quantity                          *float64 `json:"Quantity" validate:"required"`
-		PricePerSecurity                  *float64 `json:"PricePerSecurity" validate:"required"`
-		TransactionDate                   *string  `json:"TransactionDate" validate:"required"`
-		TransactionCode                   *int     `json:"TransactionCode" validate:"required"`
+		Quantity                          *float64 `json:"Quantity"`
+		PricePerSecurity                  *float64 `json:"PricePerSecurity"`
+		TransactionDate                   *string  `json:"TransactionDate"`
+		TransactionCode                   *int     `json:"TransactionCode"`
 		ConversionOrExercisePrice         *float64 `json:"ConversionOrExercisePrice"`
 		ExercisableDate                   *string  `json:"ExercisableDate"`
 		ExpirationDate                    *string  `json:"ExpirationDate"`
@@ -63,7 +65,7 @@ type (
 
 	InsiderTrades struct {
 		SecEntities                 *[]SecEntity                  `json:"SecEntities" validate:"dive,required"`
-		SecFilings                  *[]SecFiling                  `json:"SecFiling" validate:"dive,required"`
+		SecFilings                  *[]SecFilings                 `json:"SecFilings" validate:"dive,required"`
 		HeldOfficerPositions        *[]HeldOfficerPosition        `json:"HeldOfficerPositions"`
 		SecurityTransactionHoldings *[]SecurityTransactionHolding `json:"SecurityTransactionHoldings" validate:"dive,required"`
 	}
@@ -110,6 +112,18 @@ func (h *handler) validateTrades(trades *InsiderTrades) error {
 	return nil
 }
 
+func (h *handler) logRequestBody(r *http.Request) {
+	buf, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		h.l.Errorf("error reading request body: %v", err)
+		return
+	}
+	h.l.Info("logRequestBody: %v", string(buf))
+
+	reader := ioutil.NopCloser(bytes.NewBuffer(buf))
+	r.Body = reader
+}
+
 func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -119,6 +133,8 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 			h.l.Errorf("receiveTrades: failed to close body: %v", err)
 		}
 	}()
+
+	h.logRequestBody(r)
 
 	if err := json.NewDecoder(r.Body).Decode(&trades); err != nil {
 		h.l.Info("receiveTrades handler: failed to decode json to struct: ", err, "\nrequest body: ", r.Body)
@@ -178,7 +194,7 @@ func (h *handler) fillCompany(sEntity *SecEntity) *entity.Company {
 	}
 }
 
-func (h *handler) fillSecFiling(sFiling *SecFiling, positions *[]HeldOfficerPosition) *entity.SecFiling {
+func (h *handler) fillSecFiling(sFiling *SecFilings, positions *[]HeldOfficerPosition) *entity.SecFiling {
 	var officerPositions []string
 	var positionString string
 
