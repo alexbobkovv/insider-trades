@@ -27,6 +27,22 @@ info:
   title: Insider-trades trades-receiver API
   version: "1.0"
 paths:
+  /insider-trades/receiver:
+    post:
+      consumes:
+      - application/json
+      description: receiveTrades from external api
+      operationId: receiveTrades
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: receiveTrades from external api
+      tags:
+      - trades
   /trades/api/v1:
     get:
       consumes:

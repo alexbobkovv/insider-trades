@@ -22,6 +22,30 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/insider-trades/receiver": {
+            "post": {
+                "description": "receiveTrades from external api",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trades"
+                ],
+                "summary": "receiveTrades from external api",
+                "operationId": "receiveTrades",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/trades/api/v1": {
             "get": {
                 "description": "Get all transactions objects with cursor pagination",

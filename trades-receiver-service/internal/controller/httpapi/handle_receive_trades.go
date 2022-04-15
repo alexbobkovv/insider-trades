@@ -124,6 +124,16 @@ func (h *handler) logRequestBody(r *http.Request) {
 	r.Body = reader
 }
 
+// receiveTrades godoc
+// @Summary     receiveTrades from external api
+// @Description receiveTrades from external api
+// @Tags  	    trades
+// @ID          receiveTrades
+// @Accept      json
+// @Produce     json
+// @Success     200 {object} nil
+// @Failure     500 {object} nil
+// @Router      /insider-trades/receiver [post]
 func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 

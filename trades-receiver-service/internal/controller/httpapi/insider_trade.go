@@ -10,7 +10,6 @@ import (
 
 	_ "github.com/alexbobkovv/insider-trades/trades-receiver-service/docs"
 	"github.com/gorilla/mux"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 const (
@@ -39,13 +38,6 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger) *handler {
 // @produce json
 // @schemes http https
 func (h *handler) Register(router *mux.Router) http.Handler {
-
-	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:1323/swagger/doc.json"),
-		httpSwagger.DeepLinking(true),
-		httpSwagger.DocExpansion("none"),
-		httpSwagger.DomID("#swagger-ui"),
-	))
 
 	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST")
 	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET")

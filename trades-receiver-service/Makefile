@@ -1,5 +1,5 @@
 compose:
-	docker-compose up --build
+	docker-compose up -d --build
 build:
 	go build -v ./cmd/main.go
 test:
