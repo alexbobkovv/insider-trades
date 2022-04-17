@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	_ "github.com/alexbobkovv/insider-trades/trades-receiver-service/docs"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
-
-	_ "github.com/alexbobkovv/insider-trades/trades-receiver-service/docs"
 	"github.com/gorilla/mux"
 )
 
@@ -39,8 +38,8 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger) *handler {
 // @schemes http https
 func (h *handler) Register(router *mux.Router) http.Handler {
 
-	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST")
-	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET")
+	router.HandleFunc(receiverURL, h.setHeaders(h.receiveTrades)).Methods("POST", "OPTIONS")
+	router.HandleFunc(tradesURL, h.setHeaders(h.getAllTransactions)).Methods("GET", "OPTIONS")
 	router.HandleFunc(rootURL, h.HandleHomePage).Methods("GET")
 
 	return router
@@ -48,6 +47,20 @@ func (h *handler) Register(router *mux.Router) http.Handler {
 
 func (h *handler) HandleHomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Under Construction")
+}
+
+func (h *handler) setHeaders(hf http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Content-Type", "application/json")
+		if r.Method == "OPTIONS" {
+			return
+		} else {
+			hf(w, r)
+		}
+	}
 }
 
 func (h *handler) Respond(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}) {

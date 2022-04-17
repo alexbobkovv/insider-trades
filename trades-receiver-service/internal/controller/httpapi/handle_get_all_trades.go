@@ -16,11 +16,10 @@ import (
 // @Param  		cursor path string false "pagination"
 // @Param  		limit path int false "limit"
 // @Success     200 {object} entity.Transaction
-// @Failure     404 {object} int
-// @Failure     500 {object} int
+// @Failure     404 {object} nil
+// @Failure     500 {object} nil
 // @Router      /trades/api/v1 [get]
 func (h *handler) getAllTransactions(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
 
 	queryParams := r.URL.Query()
 
@@ -41,6 +40,7 @@ func (h *handler) getAllTransactions(w http.ResponseWriter, r *http.Request) {
 		limitInt, err := strconv.Atoi(limits[0])
 		if err != nil {
 			h.Error(w, r, http.StatusBadRequest, fmt.Errorf("getAllTransactions handler: failed to typecast limit to int: %w", err))
+			return
 		} else {
 			limit = limitInt
 		}
@@ -50,6 +50,7 @@ func (h *handler) getAllTransactions(w http.ResponseWriter, r *http.Request) {
 	transactions, nextCursor, err := h.s.GetAll(r.Context(), cursor, limit)
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("getAllTransactions handler: %w", err))
+		return
 	}
 	if nextCursor != "" {
 		w.Header().Add("next_cursor", nextCursor)

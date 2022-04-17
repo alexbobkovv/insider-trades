@@ -119,7 +119,6 @@ func (h *handler) logRequestBody(r *http.Request) {
 		return
 	}
 	h.l.Info("logRequestBody: %v", string(buf))
-
 	reader := ioutil.NopCloser(bytes.NewBuffer(buf))
 	r.Body = reader
 }
@@ -131,7 +130,8 @@ func (h *handler) logRequestBody(r *http.Request) {
 // @ID          receiveTrades
 // @Accept      json
 // @Produce     json
-// @Success     200 {object} nil
+// @Param  		request body InsiderTrades true "Insider trades request"
+// @Success     201 {object} nil
 // @Failure     500 {object} nil
 // @Router      /insider-trades/receiver [post]
 func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {

@@ -33,9 +33,20 @@
                 ],
                 "summary": "receiveTrades from external api",
                 "operationId": "receiveTrades",
+                "parameters": [
+                    {
+                        "description": "Insider trades request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/httpapi.InsiderTrades"
+                        }
+                    }
+                ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "201": {
+                        "description": "Created"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -79,16 +90,10 @@
                         }
                     },
                     "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "description": "Internal Server Error"
                     }
                 }
             }
@@ -117,6 +122,186 @@
                     "type": "number"
                 },
                 "transactionTypeName": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpapi.HeldOfficerPosition": {
+            "type": "object",
+            "required": [
+                "Company",
+                "Officer",
+                "PositionTitle"
+            ],
+            "properties": {
+                "Company": {
+                    "type": "integer"
+                },
+                "Id": {
+                    "type": "string"
+                },
+                "ObservedOn": {
+                    "type": "string"
+                },
+                "Officer": {
+                    "type": "integer"
+                },
+                "PositionTitle": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpapi.InsiderTrades": {
+            "type": "object",
+            "required": [
+                "SecEntities",
+                "SecFilings",
+                "SecurityTransactionHoldings"
+            ],
+            "properties": {
+                "HeldOfficerPositions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.HeldOfficerPosition"
+                    }
+                },
+                "SecEntities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.SecEntity"
+                    }
+                },
+                "SecFilings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.SecFilings"
+                    }
+                },
+                "SecurityTransactionHoldings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpapi.SecurityTransactionHolding"
+                    }
+                }
+            }
+        },
+        "httpapi.SecEntity": {
+            "type": "object",
+            "required": [
+                "Cik",
+                "Name"
+            ],
+            "properties": {
+                "Cik": {
+                    "type": "integer"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "TradingSymbol": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpapi.SecFilings": {
+            "type": "object",
+            "required": [
+                "FilingUrl",
+                "Issuer",
+                "Owner",
+                "ReportedOn"
+            ],
+            "properties": {
+                "AccessionP1": {
+                    "type": "integer"
+                },
+                "AccessionP2": {
+                    "type": "integer"
+                },
+                "AccessionP3": {
+                    "type": "integer"
+                },
+                "FilingType": {
+                    "type": "integer"
+                },
+                "FilingUrl": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "string"
+                },
+                "Issuer": {
+                    "type": "integer"
+                },
+                "Owner": {
+                    "type": "integer"
+                },
+                "ReportedOn": {
+                    "type": "string"
+                },
+                "_Issuer": {
+                    "type": "string"
+                },
+                "_Owner": {
+                    "type": "string"
+                }
+            }
+        },
+        "httpapi.SecurityTransactionHolding": {
+            "type": "object",
+            "properties": {
+                "AcquiredDisposed": {
+                    "type": "integer"
+                },
+                "ConversionOrExercisePrice": {
+                    "type": "number"
+                },
+                "DirectIndirect": {
+                    "type": "integer"
+                },
+                "EntryType": {
+                    "type": "integer"
+                },
+                "ExercisableDate": {
+                    "type": "string"
+                },
+                "ExpirationDate": {
+                    "type": "string"
+                },
+                "FromFiling": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "string"
+                },
+                "PricePerSecurity": {
+                    "type": "number"
+                },
+                "Quantity": {
+                    "type": "number"
+                },
+                "QuantityOwnedFollowingTransaction": {
+                    "type": "number"
+                },
+                "SecurityTitle": {
+                    "type": "string"
+                },
+                "SecurityType": {
+                    "type": "integer"
+                },
+                "TransactionCode": {
+                    "type": "integer"
+                },
+                "TransactionDate": {
+                    "type": "string"
+                },
+                "UnderlyingSecurityQuantity": {
+                    "type": "number"
+                },
+                "UnderlyingSecurityTitle": {
+                    "type": "string"
+                },
+                "_FromFiling": {
                     "type": "string"
                 }
             }
