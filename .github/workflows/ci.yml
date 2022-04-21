@@ -28,7 +28,7 @@ jobs:
           go-version: 1.17
 
       - name: unit-tests
-        run: "go test \
+        run: "cd ./trades-receiver-service && go test \
             -v \
             -race \
-            ./trades-receiver-service/internal/..."
+            ./internal/..."
