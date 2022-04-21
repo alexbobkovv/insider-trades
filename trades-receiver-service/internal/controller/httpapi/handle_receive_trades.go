@@ -65,7 +65,7 @@ type (
 
 	InsiderTrades struct {
 		SecEntities                 *[]SecEntity                  `json:"SecEntities" validate:"dive,required"`
-		SecFilings                  *[]SecFilings                 `json:"SecFilings" validate:"dive,required"`
+		SecFilings                  *[]SecFilings                 `json:"SecFiling" validate:"dive,required"`
 		HeldOfficerPositions        *[]HeldOfficerPosition        `json:"HeldOfficerPositions"`
 		SecurityTransactionHoldings *[]SecurityTransactionHolding `json:"SecurityTransactionHoldings" validate:"dive,required"`
 	}

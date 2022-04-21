@@ -24,6 +24,7 @@ func New(r InsiderTradeRepo, p InsiderTradePublisher) *insiderTradeService {
 func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) error {
 	var err error
 	const methodName = "(s *insiderTradeService) Receive"
+
 	trade.Trs, err = s.fillTransaction(trade.Sth)
 	if err != nil {
 		return fmt.Errorf("%v: %w", methodName, err)
@@ -52,8 +53,11 @@ func (s *insiderTradeService) GetAll(ctx context.Context, cursor string, limit i
 	return transactions, nextCursor, nil
 }
 
-// TODO cover cases with derivatives
 func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.SecurityTransactionHoldings) (*entity.Transaction, error) {
+
+	if securityHoldings == nil {
+		return nil, errors.New("fill transaction: empty trade.SecurityTransactionHoldings")
+	}
 
 	const (
 		purchaseCode = 0

@@ -1,20 +1,14 @@
-package service
+package service_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
 )
-
-type test struct {
-	name string
-	mock func()
-	// res  interface{}
-	err error
-}
 
 func TestReceive(t *testing.T) {
 	t.Parallel()
@@ -25,7 +19,7 @@ func TestReceive(t *testing.T) {
 	repo := NewMockInsiderTradeRepo(ctrl)
 	publisher := NewMockInsiderTradePublisher(ctrl)
 
-	tradeService := New(repo, publisher)
+	tradeService := service.New(repo, publisher)
 
 	ins := &entity.Insider{
 		Cik:  1878229,
@@ -57,18 +51,32 @@ func TestReceive(t *testing.T) {
 		},
 	}
 
-	trade := &entity.Trade{
+	validTrade := &entity.Trade{
 		Ins: ins, Cmp: cmp, SecF: secF, Sth: sth,
 	}
 
-	tests := []test{
+	tests := []struct {
+		name string
+		args *entity.Trade
+		mock func()
+		// res  interface{}
+		// err error
+		wantErr bool
+	}{
 		{
-			name: "empty result",
+			name:    "empty trade",
+			args:    &entity.Trade{},
+			mock:    nil,
+			wantErr: true,
+		},
+		{
+			name: "valid trade",
+			args: validTrade,
 			mock: func() {
-				repo.EXPECT().StoreTrade(context.Background(), trade).Return(nil)
+				repo.EXPECT().StoreTrade(context.Background(), validTrade).Return(nil)
+				publisher.EXPECT().Publish(context.Background(), validTrade).Return(nil)
 			},
-			// res: entity.Trade{},
-			err: nil,
+			wantErr: false,
 		},
 	}
 
@@ -78,10 +86,17 @@ func TestReceive(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			tc.mock()
-			err := tradeService.Receive(context.Background(), &entity.Trade{})
+			if tc.mock != nil {
+				tc.mock()
+			}
 
-			require.ErrorIs(t, err, tc.err)
+			err := tradeService.Receive(context.Background(), tc.args)
+
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.ErrorIs(t, err, nil)
+			}
 		})
 	}
 
