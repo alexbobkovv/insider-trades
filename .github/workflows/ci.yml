@@ -31,4 +31,4 @@ jobs:
         run: "go test \
             -v \
             -race \
-            ./internal/..."
+            ./trades-receiver-service/internal/..."
