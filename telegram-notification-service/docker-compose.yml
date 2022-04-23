@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  tg-notify:
+    networks:
+      - insider-trades
+networks:
+  insider-trades:
+    external: 
+      name: insider-trades

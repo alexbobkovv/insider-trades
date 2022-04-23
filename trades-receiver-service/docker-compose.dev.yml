@@ -1,20 +1,6 @@
 version: "3.8"
 
 services:
-  trades-receiver:
-    container_name: trades-receiver
-    build:
-      dockerfile: Dockerfile
-      context: .
-    env_file: .env
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-#    links:
-#      - postgres
-    networks:
-      - insider-trades
 
   postgres:
     container_name: postgres
@@ -33,8 +19,8 @@ services:
     image: migrate/migrate
     entrypoint: "migrate -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable -path /migrations"
     command: ""
-#    links:
-#      - postgres
+    #    links:
+    #      - postgres
     volumes:
       - ./migrations:/migrations
     networks:

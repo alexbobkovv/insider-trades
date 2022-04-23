@@ -1,5 +1,9 @@
 compose:
 	docker-compose up -d --build
+compose-prod:
+	docker-compose -f docker-compose.prod.yml up --build
+compose-dev:
+	docker-compose -f docker-compose.dev.yml up -d --build
 build:
 	go build -v ./cmd/main.go
 test:
