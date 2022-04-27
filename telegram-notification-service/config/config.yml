@@ -1,0 +1,9 @@
+app:
+  name: 'telegram-notification-service'
+  version: '1.0.0'
+server:
+  port: ':8080'
+logger:
+  level: 'debug'
+  format: 'console'
+  filepath: './telegram-notification-service.log'

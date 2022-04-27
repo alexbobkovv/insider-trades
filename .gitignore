@@ -3,5 +3,5 @@
 *.test
 main
 
-trades-receiver-service.log
+*.log
 logs.txt

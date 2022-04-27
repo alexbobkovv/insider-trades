@@ -19,8 +19,6 @@ services:
     image: migrate/migrate
     entrypoint: "migrate -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable -path /migrations"
     command: ""
-    #    links:
-    #      - postgres
     volumes:
       - ./migrations:/migrations
     networks:
