@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "entity",
+    srcs = [
+        "company.go",
+        "insider.go",
+        "sec_filings.go",
+        "security_transaction_holdings.go",
+        "trade.go",
+        "transaction.go",
+    ],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity",
+    visibility = ["//trades-receiver-service:__subpackages__"],
+)

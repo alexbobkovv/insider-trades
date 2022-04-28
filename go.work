@@ -1,7 +1,0 @@
-go 1.18
-
-use (
-	./pkg
-	./telegram-notification-service
-	./trades-receiver-service
-)

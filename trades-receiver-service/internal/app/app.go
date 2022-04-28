@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/controller/httpapi"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/message"
@@ -18,6 +19,7 @@ import (
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/kafka"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/gorilla/mux"
 )
@@ -26,9 +28,9 @@ func Run(cfg *config.Config) {
 
 	l, err := logger.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
 	if err != nil {
-		log.Println("app: failed to initialize logger")
+		log.Println("app: failed to initialize zap")
 	}
-	l.Info("app: logger initialized")
+	l.Info("app: zap initialized")
 
 	psql, err := postgresql.New(cfg.Postgres.URL)
 	if err != nil {
@@ -40,6 +42,34 @@ func Run(cfg *config.Config) {
 	if err != nil {
 		l.Fatalf("app: kafka.New: %v", err)
 	}
+
+	amqpServer, err := rabbitmq.NewServer(cfg.AmqpURL)
+	defer func() {
+		err := amqpServer.Close()
+		if err != nil {
+			l.Errorf("failed to close amqp server channel")
+		}
+	}()
+
+	if err != nil {
+		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
+	}
+
+	// TODO move it
+	err = amqpServer.Publish(
+		"trades",
+		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte("something"),
+		})
+
+	if err != nil {
+		l.Errorf("failed to publish message")
+	}
+	l.Info("RabbitMQ is started")
 
 	insiderTradeService := service.New(
 		repository.New(psql),

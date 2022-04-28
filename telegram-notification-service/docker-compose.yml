@@ -1,6 +1,13 @@
 version: '3.8'
 services:
-  tg-notify:
+  telegram-notification-service:
+    container_name: telegram-notification-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+    env_file: .env
+    ports:
+      - "8080:8080"
     networks:
       - insider-trades
 networks:

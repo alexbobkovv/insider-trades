@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "httpapi",
+    srcs = [
+        "handle_get_all_trades.go",
+        "handle_receive_trades.go",
+        "insider_trade.go",
+    ],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/controller/httpapi",
+    visibility = ["//trades-receiver-service:__subpackages__"],
+    deps = [
+        "//trades-receiver-service/docs",
+        "//trades-receiver-service/internal/entity",
+        "//trades-receiver-service/internal/service",
+        "//trades-receiver-service/pkg/logger",
+        "@com_github_go_playground_validator//:validator",
+        "@com_github_gorilla_mux//:mux",
+    ],
+)

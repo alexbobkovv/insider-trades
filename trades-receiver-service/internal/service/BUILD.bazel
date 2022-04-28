@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "service",
+    srcs = [
+        "insider_trade.go",
+        "interfaces.go",
+    ],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service",
+    visibility = ["//trades-receiver-service:__subpackages__"],
+    deps = ["//trades-receiver-service/internal/entity"],
+)
+
+go_test(
+    name = "service_test",
+    srcs = [
+        "insider_trade_test.go",
+        "mocks_test.go",
+    ],
+    deps = [
+        ":service",
+        "//trades-receiver-service/internal/entity",
+        "@com_github_golang_mock//gomock",
+        "@com_github_stretchr_testify//require",
+    ],
+)

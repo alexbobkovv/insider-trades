@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "message",
+    srcs = ["insider_trade_publish.go"],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/message",
+    visibility = ["//trades-receiver-service:__subpackages__"],
+    deps = [
+        "//trades-receiver-service/internal/entity",
+        "//trades-receiver-service/pkg/kafka",
+    ],
+)

@@ -1,2 +1,2 @@
 compose-all:
-	docker-compose -f ./trades-receiver-service/docker-compose.yml up
+	docker-compose -f ./docker-compose.yml -f ./trades-receiver-service/docker-compose.yml up

@@ -19,7 +19,7 @@ func New(level, format, filepath string) (*Logger, error) {
 
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println("logger: zap: panic occurred during logger initialization:", err)
+			log.Println("zap: zap: panic occurred during zap initialization:", err)
 		}
 	}()
 
@@ -51,7 +51,7 @@ func New(level, format, filepath string) (*Logger, error) {
 
 	writeSyncer, err := getLogWriter(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("logger.New: ")
+		return nil, fmt.Errorf("zap.New: ")
 	}
 
 	core := zapcore.NewTee(

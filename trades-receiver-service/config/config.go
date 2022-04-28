@@ -9,7 +9,8 @@ type (
 		App      `yaml:"app"`
 		Server   `yaml:"server"`
 		Postgres `yaml:"postgres"`
-		Logger   `yaml:"logger"`
+		Logger   `yaml:"zap"`
+		RabbitMQ `yaml:"rabbit_mq"`
 	}
 
 	App struct {
@@ -30,13 +31,17 @@ type (
 		Format   string `yaml:"format"`
 		Filepath string `yaml:"filepath"`
 	}
+
+	RabbitMQ struct {
+		AmqpURL string `mapstructure:"AMQP_URL"`
+	}
 )
 
 const (
-	yamlFileName   = "config.yml"
-	yamlConfigPath = "./config/"
-	envFileName    = ".env"
-	envConfigPath  = "."
+	yamlFileName       = "config.yml"
+	yamlConfigPath     = "./config/"
+	localEnvFileName   = ".env"
+	localEnvConfigPath = "."
 )
 
 func New() (*Config, error) {
@@ -48,7 +53,7 @@ func New() (*Config, error) {
 		return nil, err
 	}
 
-	err = cfg.parseEnv(envFileName, envConfigPath)
+	err = cfg.parseEnv(localEnvFileName, localEnvConfigPath)
 
 	if err != nil {
 		return nil, err
@@ -86,20 +91,22 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 	viper.AddConfigPath(filePath)
 
 	err := viper.ReadInConfig()
-
 	if err != nil {
 		return err
 	}
 
 	err = viper.Unmarshal(&c.Postgres)
-
 	if err != nil {
 		return err
 	}
 
 	viper.AutomaticEnv()
 	err = viper.Unmarshal(&c.Postgres)
+	if err != nil {
+		return err
+	}
 
+	err = viper.Unmarshal(&c.RabbitMQ)
 	if err != nil {
 		return err
 	}

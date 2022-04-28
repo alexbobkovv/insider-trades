@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "repository",
+    srcs = ["insider_trade.go"],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/repository",
+    visibility = ["//trades-receiver-service:__subpackages__"],
+    deps = [
+        "//trades-receiver-service/internal/entity",
+        "//trades-receiver-service/pkg/postgresql",
+        "@com_github_jackc_pgx_v4//:pgx",
+    ],
+)

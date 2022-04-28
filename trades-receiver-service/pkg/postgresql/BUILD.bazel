@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "postgresql",
+    srcs = ["postgresql.go"],
+    importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_jackc_pgx_v4//pgxpool"],
+)

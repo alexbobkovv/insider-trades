@@ -3,5 +3,7 @@
 *.test
 main
 
+bazel-*
+
 *.log
 logs.txt

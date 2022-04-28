@@ -18,6 +18,5 @@ FROM scratch
 COPY --from=builder /usr/go/src/build/app /app
 COPY --from=builder /usr/go/src/build/.env /.env
 COPY --from=builder /usr/go/src/build/config/ /config
-COPY --from=builder /usr/go/src/build/migrations /migrations
 
 CMD ["/app"]
