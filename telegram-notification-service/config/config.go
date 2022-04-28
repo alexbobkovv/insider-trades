@@ -8,8 +8,9 @@ type (
 	Config struct {
 		App    `yaml:"app"`
 		Server `yaml:"server"`
+		Logger `yaml:"zap"`
 		Telegram
-		Logger `yaml:"logger"`
+		RabbitMQ `yaml:"rabbit_mq"`
 	}
 
 	App struct {
@@ -18,7 +19,8 @@ type (
 	}
 
 	Telegram struct {
-		BotToken string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+		BotToken  string `mapstructure:"TELEGRAM_BOT_TOKEN"`
+		ChannelID int64  `mapstructure:"TELEGRAM_CHANNEL_ID"`
 	}
 
 	Server struct {
@@ -30,13 +32,17 @@ type (
 		Format   string `yaml:"format"`
 		Filepath string `yaml:"filepath"`
 	}
+
+	RabbitMQ struct {
+		AmqpURL string `mapstructure:"AMQP_URL"`
+	}
 )
 
 const (
-	yamlFileName   = "config.yml"
-	yamlConfigPath = "./config/"
-	envFileName    = ".env"
-	envConfigPath  = "."
+	yamlFileName       = "config.yml"
+	yamlConfigPath     = "./config/"
+	localEnvFileName   = ".env"
+	localEnvConfigPath = "."
 )
 
 func New() (*Config, error) {
@@ -48,8 +54,7 @@ func New() (*Config, error) {
 		return nil, err
 	}
 
-	err = cfg.parseEnv(envFileName, envConfigPath)
-
+	err = cfg.parseEnv(localEnvFileName, localEnvConfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -91,15 +96,12 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 		return err
 	}
 
-	// err = viper.Unmarshal(&c.Telegram)
-	//
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// viper.AutomaticEnv()
 	err = viper.Unmarshal(&c.Telegram)
+	if err != nil {
+		return err
+	}
 
+	err = viper.Unmarshal(&c.RabbitMQ)
 	if err != nil {
 		return err
 	}
