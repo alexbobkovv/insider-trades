@@ -1,0 +1,208 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  entity.Transaction:
+    properties:
+      averagePrice:
+        type: number
+      createdAt:
+        type: string
+      id:
+        type: string
+      secFilingsID:
+        type: string
+      totalShares:
+        type: integer
+      totalValue:
+        type: number
+      transactionTypeName:
+        type: string
+    type: object
+  httpapi.HeldOfficerPosition:
+    properties:
+      Company:
+        type: integer
+      Id:
+        type: string
+      ObservedOn:
+        type: string
+      Officer:
+        type: integer
+      PositionTitle:
+        type: string
+    required:
+    - Company
+    - Officer
+    - PositionTitle
+    type: object
+  httpapi.InsiderTrades:
+    properties:
+      HeldOfficerPositions:
+        items:
+          $ref: '#/definitions/httpapi.HeldOfficerPosition'
+        type: array
+      SecEntities:
+        items:
+          $ref: '#/definitions/httpapi.SecEntity'
+        type: array
+      SecFilings:
+        items:
+          $ref: '#/definitions/httpapi.SecFilings'
+        type: array
+      SecurityTransactionHoldings:
+        items:
+          $ref: '#/definitions/httpapi.SecurityTransactionHolding'
+        type: array
+    required:
+    - SecEntities
+    - SecFilings
+    - SecurityTransactionHoldings
+    type: object
+  httpapi.SecEntity:
+    properties:
+      Cik:
+        type: integer
+      Name:
+        type: string
+      TradingSymbol:
+        type: string
+    required:
+    - Cik
+    - Name
+    type: object
+  httpapi.SecFilings:
+    properties:
+      _Issuer:
+        type: string
+      _Owner:
+        type: string
+      AccessionP1:
+        type: integer
+      AccessionP2:
+        type: integer
+      AccessionP3:
+        type: integer
+      FilingType:
+        type: integer
+      FilingUrl:
+        type: string
+      Id:
+        type: string
+      Issuer:
+        type: integer
+      Owner:
+        type: integer
+      ReportedOn:
+        type: string
+    required:
+    - FilingUrl
+    - Issuer
+    - Owner
+    - ReportedOn
+    type: object
+  httpapi.SecurityTransactionHolding:
+    properties:
+      _FromFiling:
+        type: string
+      AcquiredDisposed:
+        type: integer
+      ConversionOrExercisePrice:
+        type: number
+      DirectIndirect:
+        type: integer
+      EntryType:
+        type: integer
+      ExercisableDate:
+        type: string
+      ExpirationDate:
+        type: string
+      FromFiling:
+        type: string
+      Id:
+        type: string
+      PricePerSecurity:
+        type: number
+      Quantity:
+        type: number
+      QuantityOwnedFollowingTransaction:
+        type: number
+      SecurityTitle:
+        type: string
+      SecurityType:
+        type: integer
+      TransactionCode:
+        type: integer
+      TransactionDate:
+        type: string
+      UnderlyingSecurityQuantity:
+        type: number
+      UnderlyingSecurityTitle:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Receives insider trades sec forms from external api and serves out
+    structured trades information
+  title: Insider-trades trades-receiver API
+  version: "1.0"
+paths:
+  /insider-trades/receiver:
+    post:
+      consumes:
+      - application/json
+      description: receiveTrades from external api
+      operationId: receiveTrades
+      parameters:
+      - description: Insider trades request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/httpapi.InsiderTrades'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "500":
+          description: Internal Server Error
+      summary: receiveTrades from external api
+      tags:
+      - trades
+  /trades/api/v1:
+    get:
+      consumes:
+      - application/json
+      description: Get all transactions objects with cursor pagination
+      operationId: getAllTransactions
+      parameters:
+      - description: pagination
+        in: path
+        name: cursor
+        type: string
+      - description: limit
+        in: path
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Get all transactions
+      tags:
+      - trades
+produces:
+- application/json
+schemes:
+- http
+- https
+swagger: "2.0"
