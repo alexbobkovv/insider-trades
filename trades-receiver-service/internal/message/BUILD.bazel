@@ -6,7 +6,8 @@ go_library(
     importpath = "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/message",
     visibility = ["//trades-receiver-service:__subpackages__"],
     deps = [
+        "//pkg/rabbitmq",
         "//trades-receiver-service/internal/entity",
-        "//trades-receiver-service/pkg/kafka",
+        "@com_github_rabbitmq_amqp091_go//:amqp091-go",
     ],
 )

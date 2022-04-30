@@ -2,10 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "rabbitmq",
-    srcs = [
-        "client.go",
-        "server.go",
-    ],
+    srcs = ["channel.go"],
     importpath = "github.com/alexbobkovv/insider-trades/pkg/rabbitmq",
     visibility = ["//visibility:public"],
     deps = ["@com_github_rabbitmq_amqp091_go//:amqp091-go"],

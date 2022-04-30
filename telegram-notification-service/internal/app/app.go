@@ -6,7 +6,6 @@ import (
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/pkg/zap"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func Run(cfg *config.Config) {
@@ -16,18 +15,18 @@ func Run(cfg *config.Config) {
 	}
 	l.Info("app: zap initialized")
 
-	bot, err := tgbotapi.NewBotAPI(cfg.BotToken)
+	rmq, err := rabbitmq.New(cfg.AmqpURL)
+	defer func() {
+		err := rmq.Channel.Close()
+		if err != nil {
+			l.Errorf("app: failed to close amqp channel")
+		}
+	}()
 	if err != nil {
-		l.Fatalf("app: tgbotapi.NewBotAPI: %v", err)
-	}
-	l.Infof("Authorized on account %s", bot.Self.UserName)
-
-	amqpClient, err := rabbitmq.NewClient(cfg.AmqpURL)
-	if err != nil {
-		l.Fatalf("app: failed to connect to RabbitMQ")
+		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
 	}
 
-	msgs, err := amqpClient.Consume(
+	msgs, err := rmq.Channel.Consume(
 		"telegram_channel_queue",
 		"",
 		true,
@@ -44,7 +43,7 @@ func Run(cfg *config.Config) {
 
 	go func() {
 		for d := range msgs {
-			l.Info("%s", d.Body)
+			l.Infof("%s", d.Body)
 		}
 	}()
 

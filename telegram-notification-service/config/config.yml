@@ -2,7 +2,7 @@ app:
   name: 'telegram-notification-service'
   version: '1.0.0'
 server:
-  port: ':8080'
+  port: ':8081'
 logger:
   level: 'debug'
   format: 'console'

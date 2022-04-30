@@ -16,10 +16,8 @@ import (
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/repository"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/httpserver"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/kafka"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
-	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/gorilla/mux"
 )
@@ -38,42 +36,25 @@ func Run(cfg *config.Config) {
 	}
 	defer psql.Pool.Close()
 
-	kfk, err := kafka.New()
-	if err != nil {
-		l.Fatalf("app: kafka.New: %v", err)
-	}
-
-	amqpServer, err := rabbitmq.NewServer(cfg.AmqpURL)
+	rmq, err := rabbitmq.New(cfg.AmqpURL)
 	defer func() {
-		err := amqpServer.Close()
+		err := rmq.Channel.Close()
 		if err != nil {
-			l.Errorf("failed to close amqp server channel")
+			l.Errorf("app: failed to close amqp server channel")
 		}
 	}()
-
 	if err != nil {
 		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
 	}
 
-	// TODO move it
-	err = amqpServer.Publish(
-		"trades",
-		"",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte("something"),
-		})
-
+	messageBroker, err := message.New(rmq)
 	if err != nil {
-		l.Errorf("failed to publish message")
+		l.Fatalf("app: failed to initialize messageBroker: %v", err)
 	}
-	l.Info("RabbitMQ is started")
 
 	insiderTradeService := service.New(
 		repository.New(psql),
-		message.New(kfk),
+		messageBroker,
 	)
 
 	router := mux.NewRouter()

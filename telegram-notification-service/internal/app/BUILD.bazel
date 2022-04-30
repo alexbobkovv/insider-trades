@@ -9,6 +9,5 @@ go_library(
         "//pkg/rabbitmq",
         "//pkg/zap",
         "//telegram-notification-service/config",
-        "@com_github_go_telegram_bot_api_telegram_bot_api_v5//:telegram-bot-api",
     ],
 )

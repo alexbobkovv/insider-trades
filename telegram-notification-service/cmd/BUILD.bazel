@@ -13,6 +13,7 @@ go_library(
 
 go_binary(
     name = "cmd",
+    data = ["//telegram-notification-service/config:config.yml"],
     embed = [":cmd_lib"],
     visibility = ["//visibility:public"],
 )
