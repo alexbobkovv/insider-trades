@@ -19,6 +19,6 @@ type (
 	}
 
 	InsiderTradePublisher interface {
-		Publish(ctx context.Context, trade *entity.Trade) error
+		PublishTrade(ctx context.Context, trade *entity.Trade) error
 	}
 )

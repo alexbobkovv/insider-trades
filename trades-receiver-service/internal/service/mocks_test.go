@@ -141,16 +141,16 @@ func (m *MockInsiderTradePublisher) EXPECT() *MockInsiderTradePublisherMockRecor
 	return m.recorder
 }
 
-// Publish mocks base method.
-func (m *MockInsiderTradePublisher) Publish(ctx context.Context, trade *entity.Trade) error {
+// PublishTrade mocks base method.
+func (m *MockInsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.Trade) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Publish", ctx, trade)
+	ret := m.ctrl.Call(m, "PublishTrade", ctx, trade)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Publish indicates an expected call of Publish.
-func (mr *MockInsiderTradePublisherMockRecorder) Publish(ctx, trade interface{}) *gomock.Call {
+// PublishTrade indicates an expected call of PublishTrade.
+func (mr *MockInsiderTradePublisherMockRecorder) PublishTrade(ctx, trade interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockInsiderTradePublisher)(nil).Publish), ctx, trade)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishTrade", reflect.TypeOf((*MockInsiderTradePublisher)(nil).PublishTrade), ctx, trade)
 }

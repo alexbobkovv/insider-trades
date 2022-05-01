@@ -34,28 +34,36 @@ type (
 	}
 
 	RabbitMQ struct {
-		AmqpURL string `mapstructure:"AMQP_URL"`
+		AmqpURL      string `mapstructure:"AMQP_URL"`
+		Exchange     string `yaml:"exchange"`
+		Durable      bool   `yaml:"durable"`
+		QueueName    string `yaml:"queueName"`
+		RoutingKey   string `yaml:"routingKey"`
+		ConsumerName string `yaml:"consumerName"`
 	}
 )
 
 const (
-	yamlFileName       = "config.yml"
-	yamlConfigPath     = "./config/"
-	localEnvFileName   = ".env"
-	localEnvConfigPath = "."
+	defaultYamlConfigName     = "config.yml"
+	defaultYamlConfigPath     = "./config/"
+	defaultLocalEnvConfigName = ".env"
+	defaultLocalEnvConfigPath = "."
 )
 
-func New() (*Config, error) {
+func New(configPath, configName string) (*Config, error) {
+	if configPath == "" {
+		configPath = defaultYamlConfigPath
+	}
+	if configName == "" {
+		configName = defaultYamlConfigName
+	}
 	cfg := &Config{}
 
-	err := cfg.parseYAML(yamlFileName, yamlConfigPath)
-
-	if err != nil {
+	if err := cfg.parseYAML(configName, configPath); err != nil {
 		return nil, err
 	}
 
-	err = cfg.parseEnv(localEnvFileName, localEnvConfigPath)
-	if err != nil {
+	if err := cfg.parseEnv(defaultLocalEnvConfigName, defaultLocalEnvConfigPath); err != nil {
 		return nil, err
 	}
 
@@ -67,17 +75,12 @@ func (c *Config) parseYAML(fileName, filePath string) error {
 	viper.SetConfigName(fileName)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(filePath)
-	viper.AddConfigPath(".")
 
-	err := viper.ReadInConfig()
-
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}
 
-	err = viper.Unmarshal(&c)
-
-	if err != nil {
+	if err := viper.Unmarshal(&c); err != nil {
 		return err
 	}
 
@@ -90,19 +93,15 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 	viper.SetConfigType("env")
 	viper.AddConfigPath(filePath)
 
-	err := viper.ReadInConfig()
-
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}
 
-	err = viper.Unmarshal(&c.Telegram)
-	if err != nil {
+	if err := viper.Unmarshal(&c.Telegram); err != nil {
 		return err
 	}
 
-	err = viper.Unmarshal(&c.RabbitMQ)
-	if err != nil {
+	if err := viper.Unmarshal(&c.RabbitMQ); err != nil {
 		return err
 	}
 

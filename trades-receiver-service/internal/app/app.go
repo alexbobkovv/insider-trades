@@ -47,7 +47,7 @@ func Run(cfg *config.Config) {
 		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
 	}
 
-	messageBroker, err := message.New(rmq)
+	messageBroker, err := message.New(rmq, cfg.RabbitMQ)
 	if err != nil {
 		l.Fatalf("app: failed to initialize messageBroker: %v", err)
 	}

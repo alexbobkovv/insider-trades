@@ -35,7 +35,7 @@ func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) 
 		return fmt.Errorf("%v: failed to store trade: %w", methodName, err)
 	}
 
-	err = s.publisher.Publish(ctx, trade)
+	err = s.publisher.PublishTrade(ctx, trade)
 	if err != nil {
 		return fmt.Errorf("%v: %w", methodName, err)
 	}

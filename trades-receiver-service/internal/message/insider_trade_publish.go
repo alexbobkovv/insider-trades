@@ -3,22 +3,26 @@ package message
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
+	"github.com/gofrs/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type InsiderTradePublisher struct {
-	rmq *rabbitmq.RabbitMQ
+	rmq    *rabbitmq.RabbitMQ
+	rmqCfg config.RabbitMQ
 }
 
-func New(rabbitMQ *rabbitmq.RabbitMQ) (*InsiderTradePublisher, error) {
+func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg config.RabbitMQ) (*InsiderTradePublisher, error) {
 
 	err := rabbitMQ.Channel.ExchangeDeclare(
-		"trades",
+		rmqCfg.Exchange,
 		amqp.ExchangeFanout,
-		true,
+		rmqCfg.Durable,
 		false,
 		false,
 		false,
@@ -29,7 +33,7 @@ func New(rabbitMQ *rabbitmq.RabbitMQ) (*InsiderTradePublisher, error) {
 	}
 
 	q, err := rabbitMQ.Channel.QueueDeclare(
-		"telegram_channel_queue",
+		rmqCfg.QueueName,
 		true,
 		false,
 		false,
@@ -43,8 +47,8 @@ func New(rabbitMQ *rabbitmq.RabbitMQ) (*InsiderTradePublisher, error) {
 
 	err = rabbitMQ.Channel.QueueBind(
 		q.Name,
-		"",
-		"trades",
+		rmqCfg.RoutingKey,
+		rmqCfg.Exchange,
 		false,
 		nil,
 	)
@@ -53,23 +57,56 @@ func New(rabbitMQ *rabbitmq.RabbitMQ) (*InsiderTradePublisher, error) {
 		return nil, fmt.Errorf("amqp New: %w", err)
 	}
 
-	return &InsiderTradePublisher{rabbitMQ}, nil
+	return &InsiderTradePublisher{rmq: rabbitMQ, rmqCfg: rmqCfg}, nil
 }
 
-func (p *InsiderTradePublisher) Publish(ctx context.Context, trade *entity.Trade) error {
+func (p *InsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.Trade) error {
 	// TODO fix
-	err := p.rmq.Channel.Publish(
-		"trades",
-		"",
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte("new trade"),
-		})
+	// err := p.rmq.Channel.Publish(
+	// 	p.rmqCfg.Exchange,
+	// 	p.rmqCfg.RoutingKey,
+	// 	false,
+	// 	false,
+	// 	amqp.Publishing{
+	// 		ContentType: "text/plain",
+	// 		Body:        []byte("new trade"),
+	// 	})
+	//
+	// if err != nil {
+	// 	return fmt.Errorf("message: Publish: failed to publish message: %w", err)
+	// }
 
+	// TODO rewrite
+	if err := p.publish([]byte("something")); err != nil {
+		return fmt.Errorf("PublishTrade: %w", err)
+	}
+
+	return nil
+}
+
+func (p *InsiderTradePublisher) publish(body []byte) error {
+	msgID, err := uuid.NewV4()
 	if err != nil {
-		return fmt.Errorf("message: Publish: failed to publish message: %w", err)
+		return fmt.Errorf("publish: failed to generate a new uuid: %w", err)
+	}
+
+	msg := amqp.Publishing{
+		MessageId:       msgID.String(),
+		Timestamp:       time.Now(),
+		DeliveryMode:    amqp.Persistent,
+		ContentType:     "text/plain",
+		ContentEncoding: "",
+		Body:            body,
+	}
+
+	if err := p.rmq.Channel.Publish(
+		p.rmqCfg.Exchange,
+		p.rmqCfg.RoutingKey,
+		false, // mandatory
+		false, // immediate
+		msg,
+	); err != nil {
+		return fmt.Errorf("publish: failed to publish: %w", err)
 	}
 
 	return nil

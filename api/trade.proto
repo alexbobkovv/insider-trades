@@ -1,0 +1,57 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package api;
+
+message Company {
+  string ID = 1;
+  int64 Cik = 2;
+  string Name = 3;
+  string Ticker = 4;
+}
+
+message Insider {
+  string ID = 1;
+  int64 Cik = 2;
+  string Name = 3;
+}
+
+message SecFiling {
+  string ID = 1;
+  int64 FilingType = 2;
+  string URL = 3;
+  string InsiderID = 4;
+  string OfficerPosition = 5;
+  string ReportedOn = 6;
+}
+
+message SecurityTransactionHoldings {
+  string ID = 1;
+  string TransactionID = 2;
+  string SecFilingsID = 3;
+  double QuantityOwnedFollowingTransaction = 4;
+  string SecurityTitle = 5;
+  int32 SecurityType = 6;
+  int64 Quantity = 7;
+  double PricePerSecurity = 8;
+  string TransactionDate = 9;
+  int32 TransactionCode = 10;
+}
+
+message Transaction {
+  string ID = 1;
+  string SecFilingsID = 2;
+  string TransactionTypeName = 3;
+  double AveragePrice = 4;
+  int64 TotalShares = 5;
+  double TotalValue = 6;
+  google.protobuf.Timestamp CreatedAt = 7;
+}
+
+message Trade {
+  Insider Ins = 1;
+  Company Cmp = 2;
+  SecFiling SecF = 3;
+  Transaction Trs = 4;
+  repeated SecurityTransactionHoldings Sth = 5;
+}

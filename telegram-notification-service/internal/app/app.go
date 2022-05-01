@@ -26,29 +26,30 @@ func Run(cfg *config.Config) {
 		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
 	}
 
-	msgs, err := rmq.Channel.Consume(
-		"telegram_channel_queue",
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		l.Fatalf("failed to register a consumer")
-	}
-
-	forever := make(chan bool)
-
-	go func() {
-		for d := range msgs {
-			l.Infof("%s", d.Body)
-		}
-	}()
-
-	l.Info("waiting for messages..")
-	<-forever
+	// TODO fix
+	// msgs, err := rmq.Channel.Consume(
+	// 	"telegram_channel_queue",
+	// 	"telegram_notification",
+	// 	true,
+	// 	false,
+	// 	false,
+	// 	false,
+	// 	nil,
+	// )
+	// if err != nil {
+	// 	l.Fatalf("failed to register a consumer")
+	// }
+	//
+	// forever := make(chan bool)
+	//
+	// go func() {
+	// 	for d := range msgs {
+	// 		l.Infof("%s", d.Body)
+	// 	}
+	// }()
+	//
+	// l.Info("waiting for messages..")
+	// <-forever
 	// tradesChan := tgbotapi.Chat{
 	// 	ID:   cfg.ChannelID,
 	// 	Type: "channel",

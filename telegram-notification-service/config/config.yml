@@ -7,3 +7,9 @@ logger:
   level: 'debug'
   format: 'console'
   filepath: './telegram-notification-service.log'
+rabbitmq:
+  exchange: 'trades'
+  durable: true
+  queueName: 'telegram_channel_queue'
+  routingKey: ''
+  consumerName: 'telegram_notification'

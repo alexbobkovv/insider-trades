@@ -74,7 +74,7 @@ func TestReceive(t *testing.T) {
 			args: validTrade,
 			mock: func() {
 				repo.EXPECT().StoreTrade(context.Background(), validTrade).Return(nil)
-				publisher.EXPECT().Publish(context.Background(), validTrade).Return(nil)
+				publisher.EXPECT().PublishTrade(context.Background(), validTrade).Return(nil)
 			},
 			wantErr: false,
 		},
