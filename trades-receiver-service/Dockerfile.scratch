@@ -1,0 +1,8 @@
+FROM scratch
+
+COPY main /app
+COPY .env /.env
+COPY config /config
+COPY migrations /migrations
+
+CMD ["/app"]

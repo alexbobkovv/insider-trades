@@ -7,7 +7,7 @@ type Transaction struct {
 	SecFilingsID        string
 	TransactionTypeName string
 	AveragePrice        float64
-	TotalShares         int
+	TotalShares         int64
 	TotalValue          float64
 	CreatedAt           time.Time
 }

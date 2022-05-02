@@ -1,18 +1,6 @@
 version: "3.8"
 
 services:
-  trades-receiver:
-    container_name: trades-receiver
-    build:
-      dockerfile: Dockerfile
-      context: .
-    env_file: .env
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    networks:
-      - insider-trades
 
   postgres:
     container_name: postgres
@@ -23,8 +11,8 @@ services:
     env_file: .env
     ports:
       - "5432:5432"
-    networks:
-      - insider-trades
+    # networks:
+    #   - insider-trades
 
   migrate:
     profiles: ["pkg"]
@@ -33,8 +21,8 @@ services:
     command: ""
     volumes:
       - ./migrations:/migrations
-    networks:
-      - insider-trades
+    # networks:
+    #   - insider-trades
 
   swagger-ui:
     image: swaggerapi/swagger-ui
@@ -42,18 +30,27 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./docs:/usr/share/nginx/html/doc
+      - ./api:/usr/share/nginx/html/doc
     environment:
-      API_URL: doc/swagger.yaml
+      API_URL: api/swagger.yaml
       BASE_URL: "/swagger"
       PORT: "80"
-    networks:
-      - insider-trades
+    # networks:
+    #   - insider-trades
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9.15-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    # networks:
+    #   - insider-trades
 
 volumes:
   data:
 
-networks:
-  insider-trades:
-    name: insider-trades
-    driver: bridge
+# networks:
+#   insider-trades:
+#     name: insider-trades
+#     driver: bridge

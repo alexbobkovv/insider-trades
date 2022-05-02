@@ -65,7 +65,7 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 	)
 
 	var totalNonDerivative, totalPrice, averagePrice, totalValue float64
-	var totalShares int
+	var totalShares int64
 
 	for _, sth := range securityHoldings {
 		switch sth.TransactionCode {

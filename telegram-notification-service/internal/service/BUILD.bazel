@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "interfaces.go",
+        "notification.go",
+    ],
+    importpath = "github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/service",
+    visibility = ["//telegram-notification-service:__subpackages__"],
+    deps = ["//telegram-notification-service/internal/entity"],
+)

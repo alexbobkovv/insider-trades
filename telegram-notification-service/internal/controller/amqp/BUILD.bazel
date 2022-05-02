@@ -2,7 +2,14 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "amqp",
-    srcs = ["insider_trade.go"],
+    srcs = ["trades_consumer.go"],
     importpath = "github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/controller/amqp",
     visibility = ["//telegram-notification-service:__subpackages__"],
+    deps = [
+        "//pkg/rabbitmq",
+        "//telegram-notification-service/config",
+        "//telegram-notification-service/internal/service",
+        "//trades-receiver-service/pkg/logger",
+        "@com_github_rabbitmq_amqp091_go//:amqp091-go",
+    ],
 )

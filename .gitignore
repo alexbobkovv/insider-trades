@@ -1,6 +1,7 @@
 .env
 .idea
 *.test
+*.http
 main
 
 bazel-*

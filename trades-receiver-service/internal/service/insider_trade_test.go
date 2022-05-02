@@ -30,7 +30,7 @@ func TestReceive(t *testing.T) {
 		Name:   "Independence Contract Drilling, Inc.",
 		Ticker: "ICD",
 	}
-	fType := 0
+	var fType int64
 	secF := &entity.SecFiling{
 		FilingType: &fType,
 		URL:        "https://www.sec.gov/Archives/edgar/data/1537028/000187822922000005/0001878229-22-000005-index.htm",
@@ -38,7 +38,7 @@ func TestReceive(t *testing.T) {
 	}
 
 	quantity := 2048000.0
-	secType := 0
+	var secType int32
 	sth := []*entity.SecurityTransactionHoldings{
 		{
 			QuantityOwnedFollowingTransaction: &quantity,

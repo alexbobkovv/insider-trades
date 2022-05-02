@@ -6,6 +6,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
+	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.16.0
 	github.com/rabbitmq/amqp091-go v1.3.4
@@ -13,6 +14,7 @@ require (
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/swag v1.8.1
 	go.uber.org/zap v1.21.0
+	google.golang.org/protobuf v1.28.0
 )
 
 require (

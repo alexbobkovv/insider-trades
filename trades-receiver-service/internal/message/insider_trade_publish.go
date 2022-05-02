@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/alexbobkovv/insider-trades/api"
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 	"github.com/gofrs/uuid"
+	"github.com/golang/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type InsiderTradePublisher struct {
@@ -61,23 +64,73 @@ func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg config.RabbitMQ) (*InsiderTradePubl
 }
 
 func (p *InsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.Trade) error {
-	// TODO fix
-	// err := p.rmq.Channel.Publish(
-	// 	p.rmqCfg.Exchange,
-	// 	p.rmqCfg.RoutingKey,
-	// 	false,
-	// 	false,
-	// 	amqp.Publishing{
-	// 		ContentType: "text/plain",
-	// 		Body:        []byte("new trade"),
-	// 	})
-	//
-	// if err != nil {
-	// 	return fmt.Errorf("message: Publish: failed to publish message: %w", err)
-	// }
+
+	insiderProto := api.Insider{
+		ID:   trade.Ins.ID,
+		Cik:  trade.Ins.Cik,
+		Name: trade.Ins.Name,
+	}
+
+	companyProto := api.Company{
+		ID:     trade.Cmp.ID,
+		Cik:    trade.Cmp.Cik,
+		Name:   trade.Cmp.Name,
+		Ticker: trade.Cmp.Ticker,
+	}
+
+	secFilingProto := api.SecFiling{
+		ID:              trade.SecF.ID,
+		FilingType:      trade.SecF.FilingType,
+		URL:             trade.SecF.URL,
+		InsiderID:       trade.SecF.InsiderID,
+		OfficerPosition: trade.SecF.OfficerPosition,
+		ReportedOn:      trade.SecF.ReportedOn,
+	}
+
+	var securityTransactionHoldingsProto []*api.SecurityTransactionHoldings
+
+	for _, sth := range trade.Sth {
+		sthProto := &api.SecurityTransactionHoldings{
+			ID:                                sth.ID,
+			TransactionID:                     sth.TransactionID,
+			SecFilingsID:                      sth.SecFilingsID,
+			QuantityOwnedFollowingTransaction: sth.QuantityOwnedFollowingTransaction,
+			SecurityTitle:                     sth.SecurityTitle,
+			SecurityType:                      sth.SecurityType,
+			Quantity:                          sth.Quantity,
+			PricePerSecurity:                  sth.PricePerSecurity,
+			TransactionDate:                   sth.TransactionDate,
+			TransactionCode:                   sth.TransactionCode,
+		}
+
+		securityTransactionHoldingsProto = append(securityTransactionHoldingsProto, sthProto)
+	}
+
+	transactionProto := api.Transaction{
+		ID:                  trade.Trs.ID,
+		SecFilingsID:        trade.Trs.SecFilingsID,
+		TransactionTypeName: trade.Trs.TransactionTypeName,
+		AveragePrice:        trade.Trs.AveragePrice,
+		TotalShares:         trade.Trs.TotalShares,
+		TotalValue:          trade.Trs.TotalValue,
+		CreatedAt:           timestamppb.New(trade.Trs.CreatedAt),
+	}
+
+	tradeProto := api.Trade{
+		Ins:  &insiderProto,
+		Cmp:  &companyProto,
+		SecF: &secFilingProto,
+		Trs:  &transactionProto,
+		Sth:  securityTransactionHoldingsProto,
+	}
+
+	encodedTrade, err := proto.Marshal(&tradeProto)
+	if err != nil {
+		return fmt.Errorf("PublishTrade: failed to marshal trade into proto %w", err)
+	}
 
 	// TODO rewrite
-	if err := p.publish([]byte("something")); err != nil {
+	if err := p.publish(encodedTrade); err != nil {
 		return fmt.Errorf("PublishTrade: %w", err)
 	}
 
@@ -102,8 +155,8 @@ func (p *InsiderTradePublisher) publish(body []byte) error {
 	if err := p.rmq.Channel.Publish(
 		p.rmqCfg.Exchange,
 		p.rmqCfg.RoutingKey,
-		false, // mandatory
-		false, // immediate
+		false,
+		false,
 		msg,
 	); err != nil {
 		return fmt.Errorf("publish: failed to publish: %w", err)

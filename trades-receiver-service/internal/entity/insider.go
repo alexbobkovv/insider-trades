@@ -2,6 +2,6 @@ package entity
 
 type Insider struct {
 	ID   string
-	Cik  int
+	Cik  int64
 	Name string
 }

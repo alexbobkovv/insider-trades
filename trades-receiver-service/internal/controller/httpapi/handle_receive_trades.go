@@ -15,7 +15,7 @@ import (
 
 type (
 	SecEntity struct {
-		Cik           *int    `json:"Cik" validate:"required"`
+		Cik           *int64  `json:"Cik" validate:"required"`
 		Name          *string `json:"Name" validate:"required"`
 		TradingSymbol *string `json:"TradingSymbol"`
 	}
@@ -26,7 +26,7 @@ type (
 		AccessionP1 *int    `json:"AccessionP1"`
 		AccessionP2 *int    `json:"AccessionP2"`
 		AccessionP3 *int    `json:"AccessionP3"`
-		FilingType  *int    `json:"FilingType"`
+		FilingType  *int64  `json:"FilingType"`
 		ReportedOn  *string `json:"ReportedOn" validate:"required"`
 		Issuer      *int    `json:"Issuer" validate:"required"`
 		Issuer_     *string `json:"_Issuer"`
@@ -50,12 +50,12 @@ type (
 		QuantityOwnedFollowingTransaction *float64 `json:"QuantityOwnedFollowingTransaction"`
 		DirectIndirect                    *int     `json:"DirectIndirect"`
 		SecurityTitle                     *string  `json:"SecurityTitle"`
-		SecurityType                      *int     `json:"SecurityType"`
+		SecurityType                      *int32   `json:"SecurityType"`
 		AcquiredDisposed                  *int     `json:"AcquiredDisposed"`
 		Quantity                          *float64 `json:"Quantity"`
 		PricePerSecurity                  *float64 `json:"PricePerSecurity"`
 		TransactionDate                   *string  `json:"TransactionDate"`
-		TransactionCode                   *int     `json:"TransactionCode"`
+		TransactionCode                   *int32   `json:"TransactionCode"`
 		ConversionOrExercisePrice         *float64 `json:"ConversionOrExercisePrice"`
 		ExercisableDate                   *string  `json:"ExercisableDate"`
 		ExpirationDate                    *string  `json:"ExpirationDate"`
@@ -238,7 +238,7 @@ func (h *handler) fillSecurityTransactionHoldings(holdings *[]SecurityTransactio
 			QuantityOwnedFollowingTransaction: holding.QuantityOwnedFollowingTransaction,
 			SecurityTitle:                     *holding.SecurityTitle,
 			SecurityType:                      holding.SecurityType,
-			Quantity:                          int(*holding.Quantity),
+			Quantity:                          int64(*holding.Quantity),
 			PricePerSecurity:                  *holding.PricePerSecurity,
 			TransactionDate:                   *holding.TransactionDate,
 			TransactionCode:                   *holding.TransactionCode,

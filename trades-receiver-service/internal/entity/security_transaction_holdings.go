@@ -6,9 +6,9 @@ type SecurityTransactionHoldings struct {
 	SecFilingsID                      string
 	QuantityOwnedFollowingTransaction *float64
 	SecurityTitle                     string
-	SecurityType                      *int
-	Quantity                          int
+	SecurityType                      *int32
+	Quantity                          int64
 	PricePerSecurity                  float64
 	TransactionDate                   string
-	TransactionCode                   int
+	TransactionCode                   int32
 }

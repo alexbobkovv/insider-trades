@@ -74,7 +74,8 @@ func (c *Consumer) Run() error {
 	}
 
 	for msg := range msgs {
-
+		c.l.Info(msg.Body)
 	}
 
+	return nil
 }
