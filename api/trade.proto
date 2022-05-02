@@ -1,7 +1,10 @@
-syntax = "proto3";
-import "google/protobuf/timestamp.proto";
+// protoc --go_out=. *.proto
 
-package api;
+syntax = "proto3";
+package proto;
+
+//option go_package = "github.com/alexbobkovv/insider-trades/pkg/proto";
+option go_package = ".;proto";
 
 message Company {
   string ID = 1;
@@ -45,7 +48,7 @@ message Transaction {
   double AveragePrice = 4;
   int64 TotalShares = 5;
   double TotalValue = 6;
-  google.protobuf.Timestamp CreatedAt = 7;
+  string CreatedAt = 7;
 }
 
 message Trade {
