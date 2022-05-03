@@ -1,13 +1,15 @@
 package service
 
-import "github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/entity"
+import (
+	"github.com/alexbobkovv/insider-trades/api"
+)
 
 type (
 	Service interface {
-		ProcessTrade(trade *entity.Trade) error
+		ProcessTrade(trade *api.Trade) error
 	}
 
 	TelegramAPI interface {
-		SendTrade(trade *entity.Trade) error
+		SendTrade(trade *api.Trade) error
 	}
 )

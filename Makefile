@@ -1,5 +1,9 @@
 compose-all:
 	docker-compose -f ./docker-compose.yml -f ./trades-receiver-service/docker-compose.yml up
+compose:
+	docker-compose up -d --build
+ci:
+	golangci-lint run
 proto:
 	protoc -I api --go_out=api api/*.proto
 proto-local:

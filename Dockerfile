@@ -9,17 +9,22 @@ FROM golang:1.18.1-alpine3.15 AS builder
 
 ARG SERVICE_NAME
 
+RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
+
 COPY --from=modules /go/pkg /go/pkg
 WORKDIR /go/src/build/
 COPY $SERVICE_NAME /go/src/build/$SERVICE_NAME
 COPY go.mod go.sum ./
 COPY pkg /go/src/build/pkg
+COPY api /go/src/build/api
 
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./$SERVICE_NAME/app ./$SERVICE_NAME/cmd/main.go
 
 FROM scratch
 
 ARG SERVICE_NAME
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /go/src/build/$SERVICE_NAME/app /app
 COPY --from=builder /go/src/build/$SERVICE_NAME/.env /.env

@@ -32,7 +32,7 @@ func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg config.RabbitMQ) (*InsiderTradePubl
 		nil)
 
 	if err != nil {
-		return nil, fmt.Errorf("amqp New: %w", err)
+		return nil, fmt.Errorf("message New: %w", err)
 	}
 
 	q, err := rabbitMQ.Channel.QueueDeclare(
@@ -45,7 +45,7 @@ func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg config.RabbitMQ) (*InsiderTradePubl
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("amqp New: %w", err)
+		return nil, fmt.Errorf("message New: %w", err)
 	}
 
 	err = rabbitMQ.Channel.QueueBind(
@@ -57,7 +57,7 @@ func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg config.RabbitMQ) (*InsiderTradePubl
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("amqp New: %w", err)
+		return nil, fmt.Errorf("message New: %w", err)
 	}
 
 	return &InsiderTradePublisher{rmq: rabbitMQ, rmqCfg: rmqCfg}, nil
@@ -129,7 +129,6 @@ func (p *InsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.
 		return fmt.Errorf("PublishTrade: failed to marshal trade into proto %w", err)
 	}
 
-	// TODO rewrite
 	if err := p.publish(encodedTrade); err != nil {
 		return fmt.Errorf("PublishTrade: %w", err)
 	}

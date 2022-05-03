@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2

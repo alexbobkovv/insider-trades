@@ -2,14 +2,20 @@ package app
 
 import (
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/alexbobkovv/insider-trades/pkg/logger"
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
-	"github.com/alexbobkovv/insider-trades/pkg/zap"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
+	"github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/controller/amqpconsumer"
+	"github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/service"
+	"github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/telegram"
 )
 
 func Run(cfg *config.Config) {
-	l, err := zap.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
+	l, err := logger.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
 	if err != nil {
 		log.Println("app: failed to initialize zap")
 	}
@@ -26,35 +32,40 @@ func Run(cfg *config.Config) {
 		l.Fatalf("app: failed to connect to RabbitMQ: %v", err)
 	}
 
-	// TODO fix
-	// msgs, err := rmq.Channel.Consume(
-	// 	"telegram_channel_queue",
-	// 	"telegram_notification",
-	// 	true,
-	// 	false,
-	// 	false,
-	// 	false,
-	// 	nil,
-	// )
-	// if err != nil {
-	// 	l.Fatalf("failed to register a consumer")
-	// }
-	//
-	// forever := make(chan bool)
-	//
-	// go func() {
-	// 	for d := range msgs {
-	// 		l.Infof("%s", d.Body)
-	// 	}
-	// }()
-	//
-	// l.Info("waiting for messages..")
-	// <-forever
-	// tradesChan := tgbotapi.Chat{
-	// 	ID:   cfg.ChannelID,
-	// 	Type: "channel",
-	// }
-	//
-	// msg := tgbotapi.NewMessage(tradesChan.ID, ":))")
-	// bot.Send(msg)
+	tgapi, err := telegram.New(&cfg.Telegram)
+	if err != nil {
+		l.Fatalf("app: failed to initialize telegram api: %v", err)
+	}
+
+	notificationService := service.New(tgapi)
+
+	consumer, err := amqpconsumer.New(rmq, &cfg.RabbitMQ, notificationService, l)
+	if err != nil {
+		l.Fatalf("app: failed to initialize consumer: %v", err)
+	}
+
+	// Starting server with graceful shutdown
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM)
+
+	go func() {
+		l.Info("app: amqp consumer server is running..")
+		if err := consumer.Run(); err != nil {
+			l.Fatalf("app: faild to start server: %v", err)
+		}
+	}()
+
+	// Waiting for shutdown signal
+	sysSignal := <-signalChan
+	l.Infof("app: got signal %v, shutting down..", sysSignal)
+
+	if err := rmq.Channel.Cancel(cfg.ConsumerName, true); err != nil {
+		l.Fatalf("app: failed to cancel consumer: %v", err)
+	}
+
+	if err := rmq.Connection.Close(); err != nil {
+		l.Fatalf("app: failed to close connection to rabbitMQ: %v", err)
+	}
+
+	l.Info("app: successful shutdown")
 }

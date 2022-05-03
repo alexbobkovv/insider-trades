@@ -1,23 +1,25 @@
-package amqp
+package amqpconsumer
 
 import (
 	"fmt"
 
+	"github.com/alexbobkovv/insider-trades/api"
+	"github.com/alexbobkovv/insider-trades/pkg/logger"
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/service"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
+	"github.com/golang/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Consumer struct {
 	rmq    *rabbitmq.RabbitMQ
 	rmqCfg *config.RabbitMQ
-	s      *service.Service
+	s      service.Service
 	l      *logger.Logger
 }
 
-func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg *config.RabbitMQ, service *service.Service, logger *logger.Logger) (*Consumer, error) {
+func New(rabbitMQ *rabbitmq.RabbitMQ, rmqCfg *config.RabbitMQ, service service.Service, logger *logger.Logger) (*Consumer, error) {
 
 	err := rabbitMQ.Channel.ExchangeDeclare(
 		rmqCfg.Exchange,
@@ -74,7 +76,14 @@ func (c *Consumer) Run() error {
 	}
 
 	for msg := range msgs {
-		c.l.Info(msg.Body)
+		trade := &api.Trade{}
+		if err := proto.Unmarshal(msg.Body, trade); err != nil {
+			c.l.Errorf("consumer: Run: failed to unmarshal message to proto: %v", err)
+		}
+
+		if err := c.s.ProcessTrade(trade); err != nil {
+			c.l.Errorf("consumer: Run: service error while processing trade: %v", err)
+		}
 	}
 
 	return nil
