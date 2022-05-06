@@ -5,8 +5,9 @@ import (
 
 	"github.com/alexbobkovv/insider-trades/api"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 type TgBotAPI struct {
@@ -23,18 +24,25 @@ func New(cfg *config.Telegram) (*TgBotAPI, error) {
 }
 
 func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
-	msgText := fmt.Sprintf("Ticker: #%s\nCompany: <b>%s</b>\nInsider: <b>%s</b>\n"+
-		"Type: <b>%s</b>\nTotal shares: <b>%v</b>\nAverage price: <b>%.2f$</b>\n"+
-		"Total value: <b>%.2f$</b>\n"+
-		"<a href=\"%s\">SEC form</a>\n"+
-		"Reported on: <b>%v</b>",
+	printer := message.NewPrinter(language.English)
+
+	msgText := fmt.Sprintf(
+		"Ticker: #%s\n"+
+			"Company: <b>%s</b>\n"+
+			"Insider: <b>%s</b>\n"+
+			"Type: <b>%s</b>\n"+
+			"Total shares: <b>%v</b>\n"+
+			"Average price: <b>%s$</b>\n"+
+			"Total value: <b>%s$</b>\n"+
+			"<a href=\"%s\">SEC form</a>\n"+
+			"Reported on: <b>%v</b>",
 		trade.Cmp.Ticker,
 		trade.Cmp.Name,
 		trade.Ins.Name,
 		trade.Trs.TransactionTypeName,
 		trade.Trs.TotalShares,
-		trade.Trs.AveragePrice,
-		trade.Trs.TotalValue,
+		printer.Sprintf("%s", fmt.Sprintf("%.3f", trade.Trs.AveragePrice)),
+		printer.Sprintf("%s", fmt.Sprintf("%.3f", trade.Trs.TotalValue)),
 		trade.SecF.URL,
 		trade.SecF.ReportedOn,
 	)
