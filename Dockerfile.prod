@@ -1,0 +1,13 @@
+FROM scratch
+
+ARG SERVICE_NAME
+
+COPY ca-certificates.crt /etc/ssl/certs/
+COPY .postgresql/root.crt /etc/ssl/certs/
+
+COPY $SERVICE_NAME/main /main
+COPY $SERVICE_NAME/.env /.env
+COPY $SERVICE_NAME/config/ /config
+COPY $SERVICE_NAME/migrations /migrations
+
+CMD ["/main"]

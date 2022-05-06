@@ -19,7 +19,8 @@ type (
 	}
 
 	Server struct {
-		Port string `yaml:"port"`
+		Port         string `yaml:"port"`
+		ReceiverPath string `mapstructure:"RECEIVER_PATH"`
 	}
 
 	Postgres struct {
@@ -100,6 +101,10 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 	}
 
 	if err := viper.Unmarshal(&c.RabbitMQ); err != nil {
+		return err
+	}
+
+	if err := viper.Unmarshal(&c.Server); err != nil {
 		return err
 	}
 

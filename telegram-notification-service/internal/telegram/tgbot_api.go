@@ -23,8 +23,24 @@ func New(cfg *config.Telegram) (*TgBotAPI, error) {
 }
 
 func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
+	msgText := fmt.Sprintf("Ticker: #%s\nCompany: <b>%s</b>\nInsider: <b>%s</b>\n"+
+		"Type: <b>%s</b>\nTotal shares: <b>%v</b>\nAverage price: <b>%v$</b>\n"+
+		"Total value: <b>%v$</b>\n"+
+		"<a href=\"%s\">SEC form</a>\n"+
+		"Reported on: <b>%v</b>",
+		trade.Cmp.Ticker,
+		trade.Cmp.Name,
+		trade.Ins.Name,
+		trade.Trs.TransactionTypeName,
+		trade.Trs.TotalShares,
+		trade.Trs.AveragePrice,
+		trade.Trs.TotalValue,
+		trade.SecF.URL,
+		trade.SecF.ReportedOn,
+	)
 
-	msg := tgbotapi.NewMessage(t.cfg.ChannelID, trade.String())
+	msg := tgbotapi.NewMessage(t.cfg.ChannelID, msgText)
+	msg.ParseMode = tgbotapi.ModeHTML
 	_, err := t.api.Send(msg)
 	if err != nil {
 		return fmt.Errorf("telegram: SendTrade: failed to send message to telegram channel: %w", err)

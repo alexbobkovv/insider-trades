@@ -59,7 +59,7 @@ func Run(cfg *config.Config) {
 
 	router := mux.NewRouter()
 
-	handler := httpapi.NewHandler(insiderTradeService, l)
+	handler := httpapi.NewHandler(insiderTradeService, l, cfg)
 	handler.Register(router)
 
 	httpServer := httpserver.New(router, cfg.Server.Port)

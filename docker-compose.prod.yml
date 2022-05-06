@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  trades-receiver-service:
+    container_name: trades-receiver-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        SERVICE_NAME: trades-receiver-service
+    env_file: trades-receiver-service/.env
+    ports:
+      - "8080:8080"
+      - "6432:6432"
+    depends_on:
+      - rabbitmq
+    networks:
+      - insider-trades
+
+  telegram-notification-service:
+    container_name: telegram-notification-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        SERVICE_NAME: telegram-notification-service
+    env_file: telegram-notification-service/.env
+    ports:
+      - "8081:8081"
+    depends_on:
+      - rabbitmq
+      - trades-receiver-service
+    networks:
+      - insider-trades
+
+  migrate:
+    profiles: ["pkg"]
+    image: migrate/migrate
+    entrypoint: "migrate -database ${POSTGRES_URL} -path /trades-receiver-service/migrations"
+    command: ""
+    volumes:
+      - ./migrations:/migrations
+    networks:
+      - insider-trades
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9.15-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - insider-trades
+    
+volumes:
+  data:
+
+networks:
+  insider-trades:
+    name: insider-trades
+    driver: bridge
+

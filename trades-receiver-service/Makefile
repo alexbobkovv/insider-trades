@@ -5,7 +5,7 @@ compose-prod:
 compose-dev:
 	docker-compose -f docker-compose.dev.yml up -d --build
 build:
-	go build -v ./cmd/main.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -v ./cmd/main.go
 test:
 	go test -v -cover -race ./internal/...
 mock:

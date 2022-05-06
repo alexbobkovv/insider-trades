@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
 	_ "github.com/alexbobkovv/insider-trades/trades-receiver-service/docs"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
@@ -12,18 +13,19 @@ import (
 )
 
 const (
-	receiverURL = "/insider-trades/receiver"
-	tradesURL   = "/trades/api/v1"
-	rootURL     = "/"
+	// receiverURL = "/insider-trades/receiver"
+	tradesURL = "/trades/api/v1"
+	rootURL   = "/"
 )
 
 type handler struct {
-	s service.InsiderTrade
-	l *logger.Logger
+	s   service.InsiderTrade
+	l   *logger.Logger
+	cfg *config.Config
 }
 
-func NewHandler(service service.InsiderTrade, logger *logger.Logger) *handler {
-	return &handler{s: service, l: logger}
+func NewHandler(service service.InsiderTrade, logger *logger.Logger, cfg *config.Config) *handler {
+	return &handler{s: service, l: logger, cfg: cfg}
 }
 
 // Register handlers
@@ -39,7 +41,7 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger) *handler {
 func (h *handler) Register(router *mux.Router) http.Handler {
 
 	router.Use(h.setHeadersMiddleware)
-	router.HandleFunc(receiverURL, h.receiveTrades).Methods("POST", "OPTIONS")
+	router.HandleFunc(h.cfg.Server.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
 	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET", "OPTIONS")
 	router.HandleFunc(rootURL, h.handleHomePage).Methods("GET")
 
