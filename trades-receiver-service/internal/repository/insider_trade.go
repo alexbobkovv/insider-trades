@@ -117,9 +117,10 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 	cthBatch := &pgx.Batch{}
 
 	for _, sth := range trade.Sth {
+		pricePerSecurity, _ := sth.PricePerSecurity.Float64()
 		cthBatch.Queue(securityTransactionHoldingsInsertQuery, trade.Trs.ID, trade.SecF.ID,
 			sth.QuantityOwnedFollowingTransaction, sth.SecurityTitle, sth.SecurityType,
-			sth.Quantity, sth.PricePerSecurity, sth.TransactionDate, sth.TransactionCode)
+			sth.Quantity, pricePerSecurity, sth.TransactionDate, sth.TransactionCode)
 	}
 
 	br := tx.SendBatch(ctx, cthBatch)
@@ -217,6 +218,7 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 	}
 
 	var transactions []*entity.Transaction
+	var averagePrice, totalValue float64
 
 	for rows.Next() {
 		var transaction entity.Transaction
@@ -224,14 +226,17 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 			&transaction.ID,
 			&transaction.SecFilingsID,
 			&transaction.TransactionTypeName,
-			&transaction.AveragePrice,
+			&averagePrice,
 			&transaction.TotalShares,
-			&transaction.TotalValue,
+			&totalValue,
 			&transaction.CreatedAt,
 		)
 		if err != nil {
 			return nil, "", fmt.Errorf("%v: %w", methodName, err)
 		}
+		transaction.AveragePrice = averagePrice
+		transaction.TotalValue = totalValue
+
 		transactions = append(transactions, &transaction)
 	}
 

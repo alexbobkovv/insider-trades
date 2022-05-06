@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 	"strings"
 
@@ -234,12 +235,16 @@ func (h *handler) fillSecurityTransactionHoldings(holdings *[]SecurityTransactio
 			holding.TransactionCode == nil {
 			continue
 		}
+
+		// Converting to big.Rat type for further calculation
+		pricePerSecurity := new(big.Rat).SetFloat64(*holding.PricePerSecurity)
+
 		holdingEntities = append(holdingEntities, &entity.SecurityTransactionHoldings{
 			QuantityOwnedFollowingTransaction: holding.QuantityOwnedFollowingTransaction,
 			SecurityTitle:                     *holding.SecurityTitle,
 			SecurityType:                      holding.SecurityType,
 			Quantity:                          int64(*holding.Quantity),
-			PricePerSecurity:                  *holding.PricePerSecurity,
+			PricePerSecurity:                  *pricePerSecurity,
 			TransactionDate:                   *holding.TransactionDate,
 			TransactionCode:                   *holding.TransactionCode,
 		})

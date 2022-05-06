@@ -24,8 +24,8 @@ func New(cfg *config.Telegram) (*TgBotAPI, error) {
 
 func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
 	msgText := fmt.Sprintf("Ticker: #%s\nCompany: <b>%s</b>\nInsider: <b>%s</b>\n"+
-		"Type: <b>%s</b>\nTotal shares: <b>%v</b>\nAverage price: <b>%v$</b>\n"+
-		"Total value: <b>%v$</b>\n"+
+		"Type: <b>%s</b>\nTotal shares: <b>%v</b>\nAverage price: <b>%.2f$</b>\n"+
+		"Total value: <b>%.2f$</b>\n"+
 		"<a href=\"%s\">SEC form</a>\n"+
 		"Reported on: <b>%v</b>",
 		trade.Cmp.Ticker,

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"math/big"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 )
@@ -64,22 +65,26 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 		saleCode     = 1
 	)
 
-	var totalNonDerivative, totalPrice, averagePrice, totalValue float64
-	var totalShares int64
+	var totalNonDerivative uint8
+	var totalValue, value, averagePrice, totalShares big.Rat
 
+	// TODO fix big.Rat
 	for _, sth := range securityHoldings {
+		quantity := new(big.Rat).SetInt64(sth.Quantity)
 		switch sth.TransactionCode {
 		case purchaseCode:
-			totalValue += float64(sth.Quantity) * sth.PricePerSecurity
-			totalPrice += sth.PricePerSecurity
-			totalShares += sth.Quantity
+			value.Mul(quantity, &sth.PricePerSecurity)
+			totalValue.Add(&totalValue, &value)
+
+			totalShares.Add(&totalShares, quantity)
 
 			totalNonDerivative++
 
 		case saleCode:
-			totalValue -= float64(sth.Quantity) * sth.PricePerSecurity
-			totalPrice += sth.PricePerSecurity
-			totalShares += sth.Quantity
+			value.Mul(quantity, &sth.PricePerSecurity)
+			totalValue.Sub(&totalValue, &value)
+
+			totalShares.Add(&totalShares, quantity)
 
 			totalNonDerivative++
 		}
@@ -89,7 +94,7 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 		return nil, errors.New("fill transaction: failed to match transaction code: derivative only transactions")
 	}
 
-	averagePrice = totalPrice / totalNonDerivative
+	averagePrice.Quo(&totalValue, &totalShares)
 
 	transactionNames := map[int]string{
 		purchaseCode: "BUY",
@@ -98,18 +103,22 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 
 	var transactionName string
 
-	if totalValue > 0.0 {
+	totalVal, _ := totalValue.Float64()
+	if totalVal > 0.0 {
 		transactionName = transactionNames[purchaseCode]
 	} else {
 		transactionName = transactionNames[saleCode]
-		totalValue = math.Abs(totalValue)
+		totalVal = math.Abs(totalVal)
 	}
+
+	avgPrice, _ := averagePrice.Float64()
+	tlShares, _ := totalShares.Float64()
 
 	transaction := &entity.Transaction{
 		TransactionTypeName: transactionName,
-		AveragePrice:        averagePrice,
-		TotalShares:         totalShares,
-		TotalValue:          totalValue,
+		AveragePrice:        avgPrice,
+		TotalShares:         int64(tlShares),
+		TotalValue:          totalVal,
 	}
 
 	return transaction, nil

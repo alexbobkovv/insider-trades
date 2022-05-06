@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"math/big"
 	"testing"
 
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
@@ -39,13 +40,14 @@ func TestReceive(t *testing.T) {
 
 	quantity := 2048000.0
 	var secType int32
+	pricePerSecurity := new(big.Rat).SetFloat64(3.17)
 	sth := []*entity.SecurityTransactionHoldings{
 		{
 			QuantityOwnedFollowingTransaction: &quantity,
 			SecurityTitle:                     "Common Stock",
 			SecurityType:                      &secType,
 			Quantity:                          18000.0,
-			PricePerSecurity:                  3.17,
+			PricePerSecurity:                  *pricePerSecurity,
 			TransactionDate:                   "2022-02-04T00:00:00",
 			TransactionCode:                   0,
 		},

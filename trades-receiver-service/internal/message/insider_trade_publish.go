@@ -90,6 +90,8 @@ func (p *InsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.
 	var securityTransactionHoldingsProto []*api.SecurityTransactionHoldings
 
 	for _, sth := range trade.Sth {
+		pricePerSecurity, _ := sth.PricePerSecurity.Float64()
+
 		sthProto := &api.SecurityTransactionHoldings{
 			ID:                                sth.ID,
 			TransactionID:                     sth.TransactionID,
@@ -98,7 +100,7 @@ func (p *InsiderTradePublisher) PublishTrade(ctx context.Context, trade *entity.
 			SecurityTitle:                     sth.SecurityTitle,
 			SecurityType:                      sth.SecurityType,
 			Quantity:                          sth.Quantity,
-			PricePerSecurity:                  sth.PricePerSecurity,
+			PricePerSecurity:                  pricePerSecurity,
 			TransactionDate:                   sth.TransactionDate,
 			TransactionCode:                   sth.TransactionCode,
 		}

@@ -1,5 +1,7 @@
 package entity
 
+import "math/big"
+
 type SecurityTransactionHoldings struct {
 	ID                                string
 	TransactionID                     *string
@@ -8,7 +10,7 @@ type SecurityTransactionHoldings struct {
 	SecurityTitle                     string
 	SecurityType                      *int32
 	Quantity                          int64
-	PricePerSecurity                  float64
+	PricePerSecurity                  big.Rat
 	TransactionDate                   string
 	TransactionCode                   int32
 }
