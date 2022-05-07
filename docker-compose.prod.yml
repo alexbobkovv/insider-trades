@@ -10,8 +10,8 @@ services:
         SERVICE_NAME: trades-receiver-service
     env_file: trades-receiver-service/.env
     ports:
-      - "8080:8080"
-      - "6432:6432"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:6432:6432"
     depends_on:
       - rabbitmq
     networks:
@@ -26,7 +26,7 @@ services:
         SERVICE_NAME: telegram-notification-service
     env_file: telegram-notification-service/.env
     ports:
-      - "8081:8081"
+      - "127.0.0.1:8081:8081"
     depends_on:
       - rabbitmq
       - trades-receiver-service
@@ -34,7 +34,7 @@ services:
       - insider-trades
 
   migrate:
-    profiles: ["pkg"]
+    profiles: [ "pkg" ]
     image: migrate/migrate
     entrypoint: "migrate -database ${POSTGRES_URL} -path /trades-receiver-service/migrations"
     command: ""
@@ -45,13 +45,13 @@ services:
 
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3.9.15-management-alpine
+    image: rabbitmq:3.9.15-alpine
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
     networks:
       - insider-trades
-    
+
 volumes:
   data:
 
