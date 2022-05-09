@@ -25,11 +25,13 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
+          build-args: SERVICE_NAME=trades-receiver-service
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/insider-trades:receiver
 
       - name: Build and push telegram-notification-service
         uses: docker/build-push-action@v3
         with:
           push: true
+          build-args: SERVICE_NAME=telegram-notification-service
           tags:
             ${{ secrets.DOCKERHUB_USERNAME }}/insider-trades:telegram-notification
