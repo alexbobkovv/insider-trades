@@ -10,8 +10,8 @@ import (
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 

@@ -8,8 +8,8 @@ import (
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/internal/service"
-	"github.com/golang/protobuf/proto"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"google.golang.org/protobuf/proto"
 )
 
 type Consumer struct {
