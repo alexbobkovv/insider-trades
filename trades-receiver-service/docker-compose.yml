@@ -3,6 +3,7 @@ version: "3.8"
 services:
   trades-receiver:
     container_name: trades-receiver
+    image: trades-receiver
     build:
       dockerfile: Dockerfile
       context: .
@@ -27,7 +28,7 @@ services:
       - insider-trades
 
   migrate:
-    profiles: ["pkg"]
+    profiles: [ "pkg" ]
     image: migrate/migrate
     entrypoint: "migrate -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable -path /migrations"
     command: ""

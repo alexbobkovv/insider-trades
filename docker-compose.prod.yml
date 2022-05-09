@@ -3,11 +3,8 @@ version: "3.8"
 services:
   trades-receiver-service:
     container_name: trades-receiver-service
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        SERVICE_NAME: trades-receiver-service
+    restart: always
+    image: alexbobkovv/insider-trades:receiver
     env_file: trades-receiver-service/.env
     ports:
       - "127.0.0.1:8080:8080"
@@ -16,14 +13,20 @@ services:
       - rabbitmq
     networks:
       - insider-trades
+    volumes:
+      - type: bind
+        source: ./trades-receiver-service/.env
+        target: /.env
+        read_only: true
+      - type: bind
+        source: ./.postgresql/root.crt
+        target: /etc/ssl/certs/root.crt
+        read_only: true
 
   telegram-notification-service:
     container_name: telegram-notification-service
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        SERVICE_NAME: telegram-notification-service
+    restart: always
+    image: alexbobkovv/insider-trades:telegram-notification
     env_file: telegram-notification-service/.env
     ports:
       - "127.0.0.1:8081:8081"
@@ -32,9 +35,14 @@ services:
       - trades-receiver-service
     networks:
       - insider-trades
+    volumes:
+      - type: bind
+        source: ./telegram-notification-service/.env
+        target: /.env
+        read_only: true
 
   migrate:
-    profiles: [ "pkg" ]
+    profiles: ["pkg"]
     image: migrate/migrate
     entrypoint: "migrate -database ${POSTGRES_URL} -path /trades-receiver-service/migrations"
     command: ""
@@ -45,6 +53,7 @@ services:
 
   rabbitmq:
     container_name: rabbitmq
+    restart: always
     image: rabbitmq:3.9.15-alpine
     ports:
       - "127.0.0.1:5672:5672"
@@ -59,4 +68,3 @@ networks:
   insider-trades:
     name: insider-trades
     driver: bridge
-

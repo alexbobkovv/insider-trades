@@ -3,6 +3,7 @@ version: "3.8"
 services:
   trades-receiver:
     container_name: trades-receiver
+    image: trades-receiver
     build:
       dockerfile: Dockerfile
       context: .

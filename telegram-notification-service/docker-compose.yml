@@ -2,6 +2,7 @@ version: '3.8'
 services:
   telegram-notification-service:
     container_name: telegram-notification-service
+    image: telegram-notification-service
     build:
       dockerfile: Dockerfile
       context: .
