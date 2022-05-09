@@ -28,6 +28,5 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=builder /go/src/build/$SERVICE_NAME/app /app
 COPY --from=builder /go/src/build/$SERVICE_NAME/config/ /config
-COPY --from=builder /go/src/build/$SERVICE_NAME/migrations /migrations
 
 CMD ["/app"]

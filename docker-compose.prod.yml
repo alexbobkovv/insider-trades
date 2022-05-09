@@ -14,6 +14,7 @@ services:
     networks:
       - insider-trades
     volumes:
+      - ./trades-receiver-service/migrations:/migrations
       - type: bind
         source: ./trades-receiver-service/.env
         target: /.env
@@ -42,7 +43,7 @@ services:
         read_only: true
 
   migrate:
-    profiles: ["pkg"]
+    profiles: [ "pkg" ]
     image: migrate/migrate
     entrypoint: "migrate -database ${POSTGRES_URL} -path /trades-receiver-service/migrations"
     command: ""
