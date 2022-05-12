@@ -47,7 +47,7 @@ func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
 		trade.Trs.TransactionTypeName,
 		trade.Trs.TotalShares,
 		printer.Sprintf("%.3f", trade.Trs.AveragePrice),
-		printer.Sprintf("%.3f", trade.Trs.TotalValue),
+		printer.Sprintf("%.0f", trade.Trs.TotalValue),
 		trade.SecF.URL,
 		reportedOn.Format(time.RFC1123),
 	)
