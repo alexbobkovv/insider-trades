@@ -218,11 +218,14 @@ func (h *handler) fillSecFiling(sFiling *SecFilings, positions *[]HeldOfficerPos
 		positionString = strings.Join(officerPositions, ", ")
 	}
 
+	// Proper RFC3339 time formatting
+	reportedOn := *sFiling.ReportedOn + "Z"
+
 	return &entity.SecFiling{
 		FilingType:      sFiling.FilingType,
 		URL:             *sFiling.FilingURL,
 		OfficerPosition: &positionString,
-		ReportedOn:      *sFiling.ReportedOn,
+		ReportedOn:      reportedOn,
 	}
 }
 

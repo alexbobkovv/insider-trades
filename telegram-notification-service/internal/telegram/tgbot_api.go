@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/alexbobkovv/insider-trades/api"
 	"github.com/alexbobkovv/insider-trades/telegram-notification-service/config"
@@ -25,6 +26,10 @@ func New(cfg *config.Telegram) (*TgBotAPI, error) {
 
 func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
 	printer := message.NewPrinter(language.English)
+	reportedOn, err := time.Parse(time.RFC3339, trade.SecF.ReportedOn)
+	if err != nil {
+		return fmt.Errorf("tgbot_api: SendTrade: failed to parse SecF reportedOn: %w", err)
+	}
 
 	msgText := fmt.Sprintf(
 		"Ticker: #%s\n"+
@@ -41,15 +46,15 @@ func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
 		trade.Ins.Name,
 		trade.Trs.TransactionTypeName,
 		trade.Trs.TotalShares,
-		printer.Sprintf("%s", fmt.Sprintf("%.3f", trade.Trs.AveragePrice)),
-		printer.Sprintf("%s", fmt.Sprintf("%.3f", trade.Trs.TotalValue)),
+		printer.Sprintf("%.3f", trade.Trs.AveragePrice),
+		printer.Sprintf("%.3f", trade.Trs.TotalValue),
 		trade.SecF.URL,
-		trade.SecF.ReportedOn,
+		reportedOn.Format(time.RFC1123),
 	)
 
 	msg := tgbotapi.NewMessage(t.cfg.ChannelID, msgText)
 	msg.ParseMode = tgbotapi.ModeHTML
-	_, err := t.api.Send(msg)
+	_, err = t.api.Send(msg)
 	if err != nil {
 		return fmt.Errorf("telegram: SendTrade: failed to send message to telegram channel: %w", err)
 	}

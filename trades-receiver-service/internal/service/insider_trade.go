@@ -104,15 +104,15 @@ func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.Securit
 	var transactionName string
 
 	totalVal, _ := totalValue.Float64()
+	avgPrice, _ := averagePrice.Float64()
+	tlShares, _ := totalShares.Float64()
 	if totalVal > 0.0 {
 		transactionName = transactionNames[purchaseCode]
 	} else {
 		transactionName = transactionNames[saleCode]
 		totalVal = math.Abs(totalVal)
+		avgPrice = math.Abs(avgPrice)
 	}
-
-	avgPrice, _ := averagePrice.Float64()
-	tlShares, _ := totalShares.Float64()
 
 	transaction := &entity.Transaction{
 		TransactionTypeName: transactionName,
