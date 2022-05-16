@@ -1,8 +1,10 @@
 app:
   name: 'insider-trades-receiver'
   version: '1.0.0'
-server:
+http_server:
   port: ':8080'
+grpc_server:
+  port: ':50051'
 logger:
   level: 'debug'
   format: 'console'
