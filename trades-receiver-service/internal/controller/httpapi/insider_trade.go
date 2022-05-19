@@ -41,7 +41,7 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger, cfg *config
 func (h *handler) Register(router *mux.Router) http.Handler {
 
 	router.Use(h.setHeadersMiddleware)
-	router.HandleFunc(h.cfg.Server.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
+	router.HandleFunc(h.cfg.HTTPServer.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
 	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET", "OPTIONS")
 	router.HandleFunc(rootURL, h.handleHomePage).Methods("GET")
 
