@@ -6,32 +6,45 @@ import (
 	"time"
 )
 
-type cursor struct {
+type Cursor struct {
 	Encoded          string
 	DecodedTimestamp *time.Time
+	IsEmpty          bool
 }
 
-func NewFromTime(timestampCursor *time.Time) *cursor {
+func NewFromTime(timestampCursor *time.Time) *Cursor {
 	encodedTimestamp := encodeToString(timestampCursor)
 
-	return &cursor{DecodedTimestamp: timestampCursor, Encoded: encodedTimestamp}
+	return &Cursor{DecodedTimestamp: timestampCursor, Encoded: encodedTimestamp}
 }
 
-func NewFromEncodedString(encodedCursor string) (*cursor, error) {
+func NewFromEncodedString(encodedCursor string) (*Cursor, error) {
+	if encodedCursor == "" {
+		return &Cursor{
+			Encoded:          "",
+			DecodedTimestamp: nil,
+			IsEmpty:          true,
+		}, nil
+	}
+
 	decodedCursor, err := decodeToTimestamp(encodedCursor)
 	if err != nil {
 		return nil, err
 	}
 
-	return &cursor{Encoded: encodedCursor, DecodedTimestamp: decodedCursor}, nil
+	return &Cursor{Encoded: encodedCursor, DecodedTimestamp: decodedCursor}, nil
 }
 
-func (c *cursor) GetEncoded() string {
+func (c *Cursor) GetEncoded() string {
 	return c.Encoded
 }
 
-func (c *cursor) GetDecoded() *time.Time {
+func (c *Cursor) GetDecoded() *time.Time {
 	return c.DecodedTimestamp
+}
+
+func (c *Cursor) GetUNIXTime() int64 {
+	return c.DecodedTimestamp.Unix()
 }
 
 func encodeToString(decodedCursor *time.Time) string {
