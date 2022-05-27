@@ -2,6 +2,7 @@ app:
   name: 'insider-trades-receiver'
   version: '1.0.0'
 http_server:
+  allow_origin: '*'
   port: ':8080'
 grpc_server:
   port: ':50051'

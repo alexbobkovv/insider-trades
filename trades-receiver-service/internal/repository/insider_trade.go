@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/alexbobkovv/insider-trades/api"
+	"github.com/alexbobkovv/insider-trades/pkg/types/cursor"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
 	"github.com/jackc/pgx/v4"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type InsiderTradeRepo struct {
@@ -248,4 +251,134 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 	}
 
 	return transactions, nextCursor, nil
+}
+
+func (r *InsiderTradeRepo) ListViews(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
+	const methodName = "(r *InsiderTradeRepo) ListViews"
+
+	var rows pgx.Rows
+	if reqCursor.IsEmpty() {
+		const tradeViewsSelectQuery = `
+			SELECT id,
+				   sec_filings_id,
+				   transaction_type_name,
+				   average_price,
+				   total_shares,
+				   total_value,
+				   created_at,
+				   url,
+				   insider_id,
+				   company_id,
+				   officer_position,
+				   reported_on,
+				   insider_cik,
+				   insider_name,
+				   company_cik,
+				   company_name,
+				   ticker
+			FROM trades_matview
+			LIMIT $1
+			`
+
+		var err error
+		rows, err = r.Pool.Query(ctx, tradeViewsSelectQuery, limit)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("%v: %w", methodName, err)
+		}
+
+	} else {
+
+		const tradeViewsSelectCursorQuery = `
+			SELECT id,
+				sec_filings_id,
+				transaction_type_name,
+				average_price,
+				total_shares,
+				total_value,
+				created_at,
+				url,
+				insider_id,
+				company_id,
+				officer_position,
+				reported_on,
+				insider_cik,
+				insider_name,
+				company_cik,
+				company_name,
+				ticker
+			FROM trades_matview
+			WHERE created_at < $1 :: timestamptz
+			LIMIT $2
+			`
+
+		var err error
+		rows, err = r.Pool.Query(ctx, tradeViewsSelectCursorQuery, *reqCursor.GetDecoded(), limit)
+
+		if err != nil {
+			return nil, nil, fmt.Errorf("%v: %w", methodName, err)
+		}
+	}
+
+	var tradeViews []*api.TradeViewResponse
+
+	for rows.Next() {
+		var tradeView api.TradeViewResponse
+
+		var reportedOn time.Time
+		var createdAt time.Time
+		err := rows.Scan(
+			&tradeView.ID,
+			&tradeView.SecFilingsID,
+			&tradeView.TransactionTypeName,
+			&tradeView.AveragePrice,
+			&tradeView.TotalShares,
+			&tradeView.TotalValue,
+			&createdAt,
+			&tradeView.URL,
+			&tradeView.InsiderID,
+			&tradeView.CompanyID,
+			&tradeView.OfficerPosition,
+			&reportedOn,
+			&tradeView.InsiderCik,
+			&tradeView.InsiderName,
+			&tradeView.CompanyCik,
+			&tradeView.CompanyName,
+			&tradeView.CompanyTicker,
+		)
+		if err != nil {
+			return nil, nil, fmt.Errorf("%s: failed to scan tradeView: %w", methodName, err)
+		}
+
+		const dateLayout = "01-02-2006"
+		tradeView.ReportedOn = reportedOn.Format(dateLayout)
+		tradeView.CreatedAt = timestamppb.New(createdAt)
+
+		tradeViews = append(tradeViews, &tradeView)
+	}
+
+	if len(tradeViews) > 0 {
+		cursorTimestamp := tradeViews[len(tradeViews)-1].CreatedAt.AsTime()
+		nextCursor := cursor.NewFromTime(&cursorTimestamp)
+
+		return tradeViews, nextCursor, nil
+	}
+
+	return tradeViews, cursor.NewEmpty(), nil
+
+}
+
+func (r *InsiderTradeRepo) RefreshTradeMatView(ctx context.Context) error {
+	const methodName = "(r *InsiderTradeRepo) RefreshTradeMatView"
+
+	const refreshTradeMatViewQuery = `
+		REFRESH MATERIALIZED VIEW trades_matview
+        `
+
+	_, err := r.Pool.Exec(ctx, refreshTradeMatViewQuery)
+	if err != nil {
+		return fmt.Errorf("%s: %w", methodName, err)
+	}
+
+	return nil
 }

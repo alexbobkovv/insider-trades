@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/alexbobkovv/insider-trades/api"
+	"github.com/alexbobkovv/insider-trades/pkg/types/cursor"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 )
 
@@ -11,11 +13,13 @@ type (
 	InsiderTrade interface {
 		Receive(ctx context.Context, trade *entity.Trade) error
 		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error)
+		ListViews(ctx context.Context, cur *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error)
 	}
 
 	InsiderTradeRepo interface {
 		StoreTrade(ctx context.Context, trade *entity.Trade) error
 		GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error)
+		ListViews(ctx context.Context, cur *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error)
 	}
 
 	InsiderTradePublisher interface {

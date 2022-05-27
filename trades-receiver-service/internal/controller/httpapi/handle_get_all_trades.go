@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// TODO refactor
 // getAllTransactions godoc
 // @Summary     Get all transactions
 // @Description Get all transactions objects with cursor pagination

@@ -22,6 +22,7 @@ type (
 	HTTPServer struct {
 		Port         string `mapstructure:"port"`
 		ReceiverPath string `mapstructure:"RECEIVER_PATH"`
+		AllowOrigin  string `mapstructure:"allow_origin"`
 	}
 
 	GRPCServer struct {

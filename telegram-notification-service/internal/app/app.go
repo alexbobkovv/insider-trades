@@ -17,7 +17,7 @@ import (
 func Run(cfg *config.Config) {
 	l, err := logger.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
 	if err != nil {
-		log.Println("app: failed to initialize zap")
+		log.Printf("app: failed to initialize zap: %v", err)
 	}
 	l.Info("app: zap initialized")
 

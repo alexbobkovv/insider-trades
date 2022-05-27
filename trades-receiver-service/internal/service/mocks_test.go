@@ -8,6 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	api "github.com/alexbobkovv/insider-trades/api"
+	cursor "github.com/alexbobkovv/insider-trades/pkg/types/cursor"
 	entity "github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -49,6 +51,22 @@ func (m *MockInsiderTrade) GetAll(ctx context.Context, cursor string, limit int)
 func (mr *MockInsiderTradeMockRecorder) GetAll(ctx, cursor, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockInsiderTrade)(nil).GetAll), ctx, cursor, limit)
+}
+
+// ListViews mocks base method.
+func (m *MockInsiderTrade) ListViews(ctx context.Context, cur *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListViews", ctx, cur, limit)
+	ret0, _ := ret[0].([]*api.TradeViewResponse)
+	ret1, _ := ret[1].(*cursor.Cursor)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListViews indicates an expected call of ListViews.
+func (mr *MockInsiderTradeMockRecorder) ListViews(ctx, cur, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListViews", reflect.TypeOf((*MockInsiderTrade)(nil).ListViews), ctx, cur, limit)
 }
 
 // Receive mocks base method.
@@ -102,6 +120,22 @@ func (m *MockInsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit 
 func (mr *MockInsiderTradeRepoMockRecorder) GetAll(ctx, cursor, limit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockInsiderTradeRepo)(nil).GetAll), ctx, cursor, limit)
+}
+
+// ListViews mocks base method.
+func (m *MockInsiderTradeRepo) ListViews(ctx context.Context, cur *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListViews", ctx, cur, limit)
+	ret0, _ := ret[0].([]*api.TradeViewResponse)
+	ret1, _ := ret[1].(*cursor.Cursor)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ListViews indicates an expected call of ListViews.
+func (mr *MockInsiderTradeRepoMockRecorder) ListViews(ctx, cur, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListViews", reflect.TypeOf((*MockInsiderTradeRepo)(nil).ListViews), ctx, cur, limit)
 }
 
 // StoreTrade mocks base method.

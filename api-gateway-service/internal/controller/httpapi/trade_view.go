@@ -2,38 +2,36 @@ package httpapi
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
-	_ "github.com/alexbobkovv/insider-trades/trades-receiver-service/docs"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/service"
-	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/logger"
+	"github.com/alexbobkovv/insider-trades/api-gateway-service/config"
+	"github.com/alexbobkovv/insider-trades/api-gateway-service/internal/cache"
+	"github.com/alexbobkovv/insider-trades/api-gateway-service/internal/service"
+	"github.com/alexbobkovv/insider-trades/pkg/logger"
 	"github.com/gorilla/mux"
 )
 
 const (
-	// receiverURL = "/insider-trades/receiver"
-	tradesURL = "/trades/api/v1"
-	rootURL   = "/"
+	tradeViewsURL = "/api-gateway/v1/trade-views"
 )
 
 type handler struct {
-	s   service.InsiderTrade
-	l   *logger.Logger
-	cfg *config.Config
+	s     service.Gateway
+	l     *logger.Logger
+	cfg   *config.Config
+	cache *cache.TradeCache
 }
 
-func NewHandler(service service.InsiderTrade, logger *logger.Logger, cfg *config.Config) *handler {
-	return &handler{s: service, l: logger, cfg: cfg}
+func NewHandler(service service.Gateway, logger *logger.Logger, config *config.Config, tradeCache *cache.TradeCache) *handler {
+	return &handler{s: service, l: logger, cfg: config, cache: tradeCache}
 }
 
 // Register handlers
 // Comment for swaggo/swag
-// @title       Insider-trades trades-receiver API
+// @title       Insider-trades api-gateway-service API
 // @version     1.0
-// @description Receives insider trades sec forms from external api and serves out structured trades information
-// @host        localhost:8080
+// @description Provides trade views for frontend
+// @host        localhost:8082
 // @BasePath    /
 // @accept json
 // @produce json
@@ -41,19 +39,9 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger, cfg *config
 func (h *handler) Register(router *mux.Router) http.Handler {
 
 	router.Use(h.setHeadersMiddleware)
-	router.HandleFunc(h.cfg.HTTPServer.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
-	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET", "OPTIONS")
-	router.HandleFunc(rootURL, h.handleHomePage).Methods("GET")
+	router.HandleFunc(tradeViewsURL, h.listTradeViews).Methods("GET", "OPTIONS")
 
 	return router
-}
-
-func (h *handler) handleHomePage(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "Under Construction")
-	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, err)
-		return
-	}
 }
 
 func (h *handler) setHeadersMiddleware(next http.Handler) http.Handler {
@@ -64,6 +52,7 @@ func (h *handler) setHeadersMiddleware(next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		w.Header().Set("Access-Control-Allow-Origin", h.cfg.HTTPServer.AllowOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")

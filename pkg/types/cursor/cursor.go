@@ -1,4 +1,4 @@
-package types
+package cursor
 
 import (
 	"encoding/base64"
@@ -9,7 +9,7 @@ import (
 type Cursor struct {
 	Encoded          string
 	DecodedTimestamp *time.Time
-	IsEmpty          bool
+	Empty            bool
 }
 
 func NewFromTime(timestampCursor *time.Time) *Cursor {
@@ -20,11 +20,7 @@ func NewFromTime(timestampCursor *time.Time) *Cursor {
 
 func NewFromEncodedString(encodedCursor string) (*Cursor, error) {
 	if encodedCursor == "" {
-		return &Cursor{
-			Encoded:          "",
-			DecodedTimestamp: nil,
-			IsEmpty:          true,
-		}, nil
+		return NewEmpty(), nil
 	}
 
 	decodedCursor, err := decodeToTimestamp(encodedCursor)
@@ -33,6 +29,14 @@ func NewFromEncodedString(encodedCursor string) (*Cursor, error) {
 	}
 
 	return &Cursor{Encoded: encodedCursor, DecodedTimestamp: decodedCursor}, nil
+}
+
+func NewEmpty() *Cursor {
+	return &Cursor{
+		Encoded:          "",
+		DecodedTimestamp: nil,
+		Empty:            true,
+	}
 }
 
 func (c *Cursor) GetEncoded() string {
@@ -45,6 +49,10 @@ func (c *Cursor) GetDecoded() *time.Time {
 
 func (c *Cursor) GetUNIXTime() int64 {
 	return c.DecodedTimestamp.Unix()
+}
+
+func (c *Cursor) IsEmpty() bool {
+	return c.Empty
 }
 
 func encodeToString(decodedCursor *time.Time) string {
