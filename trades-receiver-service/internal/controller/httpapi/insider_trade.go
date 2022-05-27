@@ -14,8 +14,8 @@ import (
 
 const (
 	// receiverURL = "/insider-trades/receiver"
-	tradesURL = "/trades/api/v1"
-	rootURL   = "/"
+	transactionURL = "/api/v1/transaction"
+	rootURL        = "/"
 )
 
 type handler struct {
@@ -42,7 +42,7 @@ func (h *handler) Register(router *mux.Router) http.Handler {
 
 	router.Use(h.setHeadersMiddleware)
 	router.HandleFunc(h.cfg.HTTPServer.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
-	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET", "OPTIONS")
+	router.HandleFunc(transactionURL, h.listTransactions).Methods("GET", "OPTIONS")
 	router.HandleFunc(rootURL, h.handleHomePage).Methods("GET")
 
 	return router

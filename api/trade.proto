@@ -10,6 +10,7 @@ option go_package = ".;api";
 
 service TradeService {
   rpc ListTrades (TradeRequest) returns (stream Trade);
+  rpc ListTransactions (TradeRequest) returns (stream Transaction);
   rpc ListViews (TradeViewRequest) returns (stream TradeViewResponse);
 }
 

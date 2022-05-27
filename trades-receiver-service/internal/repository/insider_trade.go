@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -161,30 +160,11 @@ func (r *InsiderTradeRepo) StoreTrade(ctx context.Context, trade *entity.Trade) 
 	return nil
 }
 
-func (r *InsiderTradeRepo) decodeTimestampCursor(encodedCursor string) (*time.Time, error) {
-	b, err := base64.StdEncoding.DecodeString(encodedCursor)
-	if err != nil {
-		return nil, fmt.Errorf("decodeTimestampCursor: failed to decode cursor: %w", err)
-	}
-
-	timestamp, err := time.Parse(time.RFC3339Nano, string(b))
-	if err != nil {
-		return nil, fmt.Errorf("decodeTimestampCursor: failed parse timestamp: %w", err)
-	}
-
-	return &timestamp, nil
-}
-
-// TODO encoder
-func (r *InsiderTradeRepo) encodeTimestampCursor(decodedCursor time.Time) string {
-	return base64.StdEncoding.EncodeToString([]byte(decodedCursor.Format(time.RFC3339Nano)))
-}
-
-func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error) {
-	const methodName = "(r *InsiderTradeRepo) GetAll"
+func (r *InsiderTradeRepo) ListTransactions(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*entity.Transaction, *cursor.Cursor, error) {
+	const methodName = "(r *InsiderTradeRepo) ListTrades"
 
 	var rows pgx.Rows
-	if cursor == "" {
+	if reqCursor.IsEmpty() {
 		const transactionSelectQuery = `
 			SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
 			FROM transaction
@@ -195,16 +175,11 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 		rows, err = r.Pool.Query(ctx, transactionSelectQuery, limit)
 
 		if err != nil {
-			return nil, "", fmt.Errorf("%v: %w", methodName, err)
+			return nil, cursor.NewEmpty(), fmt.Errorf("%v: %w", methodName, err)
 		}
 
 	} else {
-		var err error
-		decodedCursor, err := r.decodeTimestampCursor(cursor)
-
-		if err != nil {
-			return nil, "", fmt.Errorf("%v: invalid cursor: %w", methodName, err)
-		}
+		decodedCursor := reqCursor.GetDecoded()
 
 		const transactionSelectCursorQuery = `
 			SELECT id, sec_filings_id, transaction_type_name, average_price, total_shares, total_value, created_at
@@ -213,10 +188,11 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 			ORDER BY created_at DESC
 			LIMIT $2`
 
+		var err error
 		rows, err = r.Pool.Query(ctx, transactionSelectCursorQuery, *decodedCursor, limit)
 
 		if err != nil {
-			return nil, "", fmt.Errorf("%v: %w", methodName, err)
+			return nil, cursor.NewEmpty(), fmt.Errorf("%v: %w", methodName, err)
 		}
 	}
 
@@ -235,7 +211,7 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 			&transaction.CreatedAt,
 		)
 		if err != nil {
-			return nil, "", fmt.Errorf("%v: %w", methodName, err)
+			return nil, cursor.NewEmpty(), fmt.Errorf("%v: %w", methodName, err)
 		}
 		transaction.AveragePrice = averagePrice
 		transaction.TotalValue = totalValue
@@ -243,14 +219,13 @@ func (r *InsiderTradeRepo) GetAll(ctx context.Context, cursor string, limit int)
 		transactions = append(transactions, &transaction)
 	}
 
-	var nextCursor string
-
 	if len(transactions) > 0 {
 		cursorTimestamp := transactions[len(transactions)-1].CreatedAt
-		nextCursor = r.encodeTimestampCursor(cursorTimestamp)
+		nextCursor := cursor.NewFromTime(&cursorTimestamp)
+		return transactions, nextCursor, nil
 	}
 
-	return transactions, nextCursor, nil
+	return transactions, cursor.NewEmpty(), nil
 }
 
 func (r *InsiderTradeRepo) ListViews(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {

@@ -23,6 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TradeServiceClient interface {
 	ListTrades(ctx context.Context, in *TradeRequest, opts ...grpc.CallOption) (TradeService_ListTradesClient, error)
+	ListTransactions(ctx context.Context, in *TradeRequest, opts ...grpc.CallOption) (TradeService_ListTransactionsClient, error)
 	ListViews(ctx context.Context, in *TradeViewRequest, opts ...grpc.CallOption) (TradeService_ListViewsClient, error)
 }
 
@@ -66,8 +67,40 @@ func (x *tradeServiceListTradesClient) Recv() (*Trade, error) {
 	return m, nil
 }
 
+func (c *tradeServiceClient) ListTransactions(ctx context.Context, in *TradeRequest, opts ...grpc.CallOption) (TradeService_ListTransactionsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TradeService_ServiceDesc.Streams[1], "/api.TradeService/ListTransactions", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &tradeServiceListTransactionsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TradeService_ListTransactionsClient interface {
+	Recv() (*Transaction, error)
+	grpc.ClientStream
+}
+
+type tradeServiceListTransactionsClient struct {
+	grpc.ClientStream
+}
+
+func (x *tradeServiceListTransactionsClient) Recv() (*Transaction, error) {
+	m := new(Transaction)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *tradeServiceClient) ListViews(ctx context.Context, in *TradeViewRequest, opts ...grpc.CallOption) (TradeService_ListViewsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TradeService_ServiceDesc.Streams[1], "/api.TradeService/ListViews", opts...)
+	stream, err := c.cc.NewStream(ctx, &TradeService_ServiceDesc.Streams[2], "/api.TradeService/ListViews", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +136,7 @@ func (x *tradeServiceListViewsClient) Recv() (*TradeViewResponse, error) {
 // for forward compatibility
 type TradeServiceServer interface {
 	ListTrades(*TradeRequest, TradeService_ListTradesServer) error
+	ListTransactions(*TradeRequest, TradeService_ListTransactionsServer) error
 	ListViews(*TradeViewRequest, TradeService_ListViewsServer) error
 	mustEmbedUnimplementedTradeServiceServer()
 }
@@ -113,6 +147,9 @@ type UnimplementedTradeServiceServer struct {
 
 func (UnimplementedTradeServiceServer) ListTrades(*TradeRequest, TradeService_ListTradesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListTrades not implemented")
+}
+func (UnimplementedTradeServiceServer) ListTransactions(*TradeRequest, TradeService_ListTransactionsServer) error {
+	return status.Errorf(codes.Unimplemented, "method ListTransactions not implemented")
 }
 func (UnimplementedTradeServiceServer) ListViews(*TradeViewRequest, TradeService_ListViewsServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListViews not implemented")
@@ -151,6 +188,27 @@ func (x *tradeServiceListTradesServer) Send(m *Trade) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _TradeService_ListTransactions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(TradeRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TradeServiceServer).ListTransactions(m, &tradeServiceListTransactionsServer{stream})
+}
+
+type TradeService_ListTransactionsServer interface {
+	Send(*Transaction) error
+	grpc.ServerStream
+}
+
+type tradeServiceListTransactionsServer struct {
+	grpc.ServerStream
+}
+
+func (x *tradeServiceListTransactionsServer) Send(m *Transaction) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _TradeService_ListViews_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(TradeViewRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -183,6 +241,11 @@ var TradeService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ListTrades",
 			Handler:       _TradeService_ListTrades_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ListTransactions",
+			Handler:       _TradeService_ListTransactions_Handler,
 			ServerStreams: true,
 		},
 		{
