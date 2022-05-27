@@ -12,6 +12,7 @@ services:
     env_file: trades-receiver-service/.env
     ports:
       - "127.0.0.1:8080:8080"
+      - "127.0.0.1:50051:50051"
     depends_on:
       - postgres
       - rabbitmq
@@ -30,9 +31,25 @@ services:
     ports:
       - "127.0.0.1:8081:8081"
     depends_on:
-      - postgres
       - rabbitmq
       - trades-receiver-service
+    networks:
+      - insider-trades
+
+  api-gateway-service:
+    container_name: api-gateway-service
+    image: api-gateway-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        SERVICE_NAME: api-gateway-service
+    env_file: api-gateway-service/.env
+    ports:
+      - "127.0.0.1:8082:8082"
+    depends_on:
+      - trades-receiver-service
+      - redis
     networks:
       - insider-trades
 
@@ -45,13 +62,28 @@ services:
     env_file: .env
     ports:
       - "127.0.0.1:5432:5432"
+      - "127.0.0.1:6432:6432"
     networks:
       - insider-trades
 
+  redis:
+    container_name: redis
+    image: redis:7.0.0-alpine
+    restart: always
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --loglevel warning --requirepass ${REDIS_PASSWORD}
+    #    volumes:
+    #      - redis:/data
+    networks:
+      - insider-trades
+
+
   migrate:
-    profiles: ["pkg"]
+    profiles: [ "pkg" ]
     image: migrate/migrate
-    entrypoint: "migrate -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable -path /migrations"
+    # entrypoint: "migrate -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}?sslmode=disable -path /migrations"
+    entrypoint: "migrate -database ${POSTGRES_URL} -path /trades-receiver-service/migrations"
     command: ""
     volumes:
       - ./migrations:/migrations
@@ -75,6 +107,8 @@ services:
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.9.15-management-alpine
+    environment:
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbit log_levels [{connection,error}]"
     ports:
       - "127.0.0.1:5672:5672"
       - "127.0.0.1:15672:15672"

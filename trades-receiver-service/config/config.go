@@ -6,21 +6,27 @@ import (
 
 type (
 	Config struct {
-		App      `yaml:"app"`
-		Server   `yaml:"server"`
-		Postgres `yaml:"postgres"`
-		Logger   `yaml:"zap"`
-		RabbitMQ `yaml:"rabbit_mq"`
+		App        `mapstructure:"app"`
+		HTTPServer `mapstructure:"http_server"`
+		GRPCServer `mapstructure:"grpc_server"`
+		Postgres   `mapstructure:"postgres"`
+		Logger     `mapstructure:"logger"`
+		RabbitMQ   `mapstructure:"rabbitmq"`
 	}
 
 	App struct {
-		Name    string `yaml:"name"`
-		Version string `yaml:"version"`
+		Name    string `mapstructure:"name"`
+		Version string `mapstructure:"version"`
 	}
 
-	Server struct {
-		Port         string `yaml:"port"`
+	HTTPServer struct {
+		Port         string `mapstructure:"port"`
 		ReceiverPath string `mapstructure:"RECEIVER_PATH"`
+		AllowOrigin  string `mapstructure:"allow_origin"`
+	}
+
+	GRPCServer struct {
+		Port string `mapstructure:"port"`
 	}
 
 	Postgres struct {
@@ -28,18 +34,18 @@ type (
 	}
 
 	Logger struct {
-		Level    string `yaml:"level"`
-		Format   string `yaml:"format"`
-		Filepath string `yaml:"filepath"`
+		Level    string `mapstructure:"level"`
+		Format   string `mapstructure:"format"`
+		Filepath string `mapstructure:"filepath"`
 	}
 
 	RabbitMQ struct {
 		AmqpURL      string `mapstructure:"AMQP_URL"`
-		Exchange     string `yaml:"exchange"`
-		Durable      bool   `yaml:"durable"`
-		QueueName    string `yaml:"queueName"`
-		RoutingKey   string `yaml:"routingKey"`
-		ConsumerName string `yaml:"consumerName"`
+		Exchange     string `mapstructure:"exchange"`
+		Durable      bool   `mapstructure:"durable"`
+		QueueName    string `mapstructure:"queueName"`
+		RoutingKey   string `mapstructure:"routingKey"`
+		ConsumerName string `mapstructure:"consumerName"`
 	}
 )
 
@@ -72,9 +78,9 @@ func New(configPath, configName string) (*Config, error) {
 
 func (c *Config) parseYAML(fileName, filePath string) error {
 
+	viper.AddConfigPath(filePath)
 	viper.SetConfigName(fileName)
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(filePath)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return err
@@ -104,7 +110,7 @@ func (c *Config) parseEnv(fileName, filePath string) error {
 		return err
 	}
 
-	if err := viper.Unmarshal(&c.Server); err != nil {
+	if err := viper.Unmarshal(&c.HTTPServer); err != nil {
 		return err
 	}
 

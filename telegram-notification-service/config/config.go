@@ -6,16 +6,16 @@ import (
 
 type (
 	Config struct {
-		App    `yaml:"app"`
-		Server `yaml:"server"`
-		Logger `yaml:"zap"`
+		App    `mapstructure:"app"`
+		Server `mapstructure:"server"`
+		Logger `mapstructure:"logger"`
 		Telegram
-		RabbitMQ `yaml:"rabbit_mq"`
+		RabbitMQ `mapstructure:"rabbitmq"`
 	}
 
 	App struct {
-		Name    string `yaml:"name"`
-		Version string `yaml:"version"`
+		Name    string `mapstructure:"name"`
+		Version string `mapstructure:"version"`
 	}
 
 	Telegram struct {
@@ -24,22 +24,22 @@ type (
 	}
 
 	Server struct {
-		Port string `yaml:"port"`
+		Port string `mapstructure:"port"`
 	}
 
 	Logger struct {
-		Level    string `yaml:"level"`
-		Format   string `yaml:"format"`
-		Filepath string `yaml:"filepath"`
+		Level    string `mapstructure:"level"`
+		Format   string `mapstructure:"format"`
+		Filepath string `mapstructure:"filepath"`
 	}
 
 	RabbitMQ struct {
 		AmqpURL      string `mapstructure:"AMQP_URL"`
-		Exchange     string `yaml:"exchange"`
-		Durable      bool   `yaml:"durable"`
-		QueueName    string `yaml:"queueName"`
-		RoutingKey   string `yaml:"routingKey"`
-		ConsumerName string `yaml:"consumerName"`
+		Exchange     string `mapstructure:"exchange"`
+		Durable      bool   `mapstructure:"durable"`
+		QueueName    string `mapstructure:"queueName"`
+		RoutingKey   string `mapstructure:"routingKey"`
+		ConsumerName string `mapstructure:"consumerName"`
 	}
 )
 

@@ -1,0 +1,22 @@
+app:
+  name: 'insider-trades-api-gateway'
+  version: '1.0.0'
+http_server:
+  allow_origin: '*'
+  port: ':8082'
+grpc:
+  receiver_addr: 'trades-receiver-service:50051'
+logger:
+  level: 'debug'
+  format: 'console'
+  filepath: './insider-trades-api-gateway.log'
+redis:
+  host: '127.0.0.1'
+  port: '6379'
+rabbitmq:
+  exchange: 'trades'
+  durable: true
+  queueName: 'api_gateway_queue'
+  routingKey: ''
+  consumerName: 'api_gateway'
+

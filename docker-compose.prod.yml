@@ -42,6 +42,36 @@ services:
         target: /.env
         read_only: true
 
+  api-gateway-service:
+    container_name: api-gateway-service
+    image: api-gateway-service
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        SERVICE_NAME: api-gateway-service
+    env_file: api-gateway-service/.env
+    ports:
+      - "127.0.0.1:8082:8082"
+    depends_on:
+      - trades-receiver-service
+      - redis
+    networks:
+      - insider-trades
+
+  redis:
+    container_name: redis
+    image: redis:7.0.0-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis:/data
+    networks:
+      - insider-trades
+
+
   migrate:
     profiles: [ "pkg" ]
     image: migrate/migrate
@@ -64,6 +94,7 @@ services:
 
 volumes:
   data:
+  redis:
 
 networks:
   insider-trades:

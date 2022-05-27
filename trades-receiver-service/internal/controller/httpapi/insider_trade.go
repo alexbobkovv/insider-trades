@@ -14,8 +14,8 @@ import (
 
 const (
 	// receiverURL = "/insider-trades/receiver"
-	tradesURL = "/trades/api/v1"
-	rootURL   = "/"
+	transactionURL = "/api/v1/transaction"
+	rootURL        = "/"
 )
 
 type handler struct {
@@ -41,8 +41,8 @@ func NewHandler(service service.InsiderTrade, logger *logger.Logger, cfg *config
 func (h *handler) Register(router *mux.Router) http.Handler {
 
 	router.Use(h.setHeadersMiddleware)
-	router.HandleFunc(h.cfg.Server.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
-	router.HandleFunc(tradesURL, h.getAllTransactions).Methods("GET", "OPTIONS")
+	router.HandleFunc(h.cfg.HTTPServer.ReceiverPath, h.receiveTrades).Methods("POST", "OPTIONS")
+	router.HandleFunc(transactionURL, h.listTransactions).Methods("GET", "OPTIONS")
 	router.HandleFunc(rootURL, h.handleHomePage).Methods("GET")
 
 	return router
@@ -57,8 +57,14 @@ func (h *handler) handleHomePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) setHeadersMiddleware(next http.Handler) http.Handler {
+	const methodName = "(h *handler) setHeadersMiddleware"
+
+	if h.cfg.HTTPServer.AllowOrigin == "" {
+		h.l.Fatalf("%s: please specify CORS allow origin feild in config.yml file(\"allow_origin: '*'\" to allow all hosts(not recomended))", methodName)
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Origin", h.cfg.HTTPServer.AllowOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Content-Type", "application/json")

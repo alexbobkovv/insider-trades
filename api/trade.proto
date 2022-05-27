@@ -8,6 +8,42 @@ import "google/protobuf/timestamp.proto";
 //option go_package = "github.com/alexbobkovv/insider-trades/pkg/api";
 option go_package = ".;api";
 
+service TradeService {
+  rpc ListTrades (TradeRequest) returns (stream Trade);
+  rpc ListTransactions (TradeRequest) returns (stream Transaction);
+  rpc ListViews (TradeViewRequest) returns (stream TradeViewResponse);
+}
+
+message TradeRequest {
+  string cursor = 1;
+  uint32 limit = 2;
+}
+
+message TradeViewRequest {
+  string cursor = 1;
+  uint32 limit = 2;
+}
+
+message TradeViewResponse {
+  string ID = 1;
+  string SecFilingsID = 2;
+  string TransactionTypeName = 3;
+  double AveragePrice = 4;
+  int64 TotalShares = 5;
+  double TotalValue = 6;
+  google.protobuf.Timestamp CreatedAt = 7;
+  string URL = 8;
+  string InsiderID = 9;
+  string CompanyID = 10;
+  string OfficerPosition = 11;
+  string ReportedOn = 12;
+  int64 InsiderCik = 13;
+  string InsiderName = 14;
+  int64 CompanyCik = 15;
+  string CompanyName = 16;
+  string CompanyTicker = 17;
+}
+
 message Company {
   string ID = 1;
   int64 Cik = 2;
@@ -26,8 +62,9 @@ message SecFiling {
   optional int64 FilingType = 2;
   string URL = 3;
   string InsiderID = 4;
-  optional string OfficerPosition = 5;
-  string ReportedOn = 6;
+  string CompanyID = 5;
+  optional string OfficerPosition = 6;
+  string ReportedOn = 7;
 }
 
 message SecurityTransactionHoldings {

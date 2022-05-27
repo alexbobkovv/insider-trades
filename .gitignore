@@ -8,3 +8,4 @@ bazel-*
 
 *.log
 logs.txt
+sample_data

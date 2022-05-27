@@ -7,6 +7,8 @@ import (
 	"math"
 	"math/big"
 
+	"github.com/alexbobkovv/insider-trades/api"
+	"github.com/alexbobkovv/insider-trades/pkg/types/cursor"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/entity"
 )
 
@@ -45,13 +47,24 @@ func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) 
 }
 
 // TODO refactor and test
-func (s *insiderTradeService) GetAll(ctx context.Context, cursor string, limit int) ([]*entity.Transaction, string, error) {
-	transactions, nextCursor, err := s.repo.GetAll(ctx, cursor, limit)
+func (s *insiderTradeService) ListTransactions(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*entity.Transaction, *cursor.Cursor, error) {
+	transactions, nextCursor, err := s.repo.ListTransactions(ctx, reqCursor, limit)
 	if err != nil {
-		return nil, "", fmt.Errorf("(s *insiderTradeService) GetAll: %w", err)
+		return nil, cursor.NewEmpty(), fmt.Errorf("(s *insiderTradeService) ListTrades: %w", err)
 	}
 
 	return transactions, nextCursor, nil
+}
+
+// TODO implement refresh mat view
+func (s *insiderTradeService) ListViews(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
+	tradeViews, nextCursor, err := s.repo.ListViews(ctx, reqCursor, limit)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ListViews: %w", err)
+	}
+
+	return tradeViews, nextCursor, nil
+
 }
 
 func (s *insiderTradeService) fillTransaction(securityHoldings []*entity.SecurityTransactionHoldings) (*entity.Transaction, error) {

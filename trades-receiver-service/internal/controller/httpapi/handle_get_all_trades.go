@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/alexbobkovv/insider-trades/pkg/types/cursor"
 )
 
+// TODO refactor
 // getAllTransactions godoc
 // @Summary     Get all transactions
 // @Description Get all transactions objects with cursor pagination
@@ -19,41 +22,42 @@ import (
 // @Failure     404 {object} nil
 // @Failure     500 {object} nil
 // @Router      /trades/api/v1 [get]
-func (h *handler) getAllTransactions(w http.ResponseWriter, r *http.Request) {
+func (h *handler) listTransactions(w http.ResponseWriter, r *http.Request) {
+	const methodName = "(h *handler) listTrades"
 
 	queryParams := r.URL.Query()
 
-	var cursor string
-	cursors, present := queryParams["cursor"]
-	if !present || len(cursors) != 1 {
-		// TODO cursor
-		cursor = ""
-	} else {
-		cursor = cursors[0]
+	reqCursorStr := queryParams.Get("cursor")
+	reqCursor, err := cursor.NewFromEncodedString(reqCursorStr)
+	if err != nil {
+		h.Error(w, r, http.StatusBadRequest, fmt.Errorf("%s: failed to parse cursor: %w", methodName, err))
+		return
 	}
 
-	var limit int
-	limits, present := queryParams["limit"]
-	if !present || len(limits) != 1 {
-		limit = 20
+	const defaultLimit = 20
+
+	var reqLimit uint32
+	reqLimitStr := queryParams.Get("limit")
+	if reqLimitStr == "" {
+		reqLimit = defaultLimit
 	} else {
-		limitInt, err := strconv.Atoi(limits[0])
+		limitInt, err := strconv.Atoi(reqLimitStr)
 		if err != nil {
-			h.Error(w, r, http.StatusBadRequest, fmt.Errorf("getAllTransactions handler: failed to typecast limit to int: %w", err))
+			h.Error(w, r, http.StatusBadRequest, fmt.Errorf("%s: failed to typecast limit to int: %w", methodName, err))
 			return
 		} else {
-			limit = limitInt
+			reqLimit = uint32(limitInt)
 		}
 	}
 
-	// TODO getAll
-	transactions, nextCursor, err := h.s.GetAll(r.Context(), cursor, limit)
+	transactions, nextCursor, err := h.s.ListTransactions(r.Context(), reqCursor, reqLimit)
 	if err != nil {
-		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("getAllTransactions handler: %w", err))
+		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("%s: %w", methodName, err))
 		return
 	}
-	if nextCursor != "" {
-		w.Header().Add("next_cursor", nextCursor)
+	if !nextCursor.IsEmpty() {
+		w.Header().Add("next_cursor", nextCursor.GetEncoded())
 	}
+
 	h.Respond(w, r, http.StatusOK, transactions)
 }

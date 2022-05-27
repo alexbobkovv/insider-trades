@@ -3,14 +3,17 @@ package app
 import (
 	"context"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/alexbobkovv/insider-trades/api"
 	"github.com/alexbobkovv/insider-trades/pkg/rabbitmq"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/config"
+	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/controller/grpcapi"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/controller/httpapi"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/message"
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/internal/repository"
@@ -20,13 +23,14 @@ import (
 	"github.com/alexbobkovv/insider-trades/trades-receiver-service/pkg/postgresql"
 
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 )
 
 func Run(cfg *config.Config) {
 
 	l, err := logger.New(cfg.Logger.Level, cfg.Logger.Format, cfg.Logger.Filepath)
 	if err != nil {
-		log.Println("app: failed to initialize zap")
+		log.Printf("app: failed to initialize zap: %v", err)
 	}
 	l.Info("app: zap initialized")
 
@@ -62,16 +66,35 @@ func Run(cfg *config.Config) {
 	handler := httpapi.NewHandler(insiderTradeService, l, cfg)
 	handler.Register(router)
 
-	httpServer := httpserver.New(router, cfg.Server.Port)
+	httpServer := httpserver.New(router, cfg.HTTPServer.Port)
 
-	// Starting server with graceful shutdown
+	// Setup gRPC server
+	lis, err := net.Listen("tcp", cfg.GRPCServer.Port)
+	if err != nil {
+		l.Fatalf("app: failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	grpcTradeServer := grpcapi.NewTradeServer(insiderTradeService, l, cfg)
+	api.RegisterTradeServiceServer(grpcServer, grpcTradeServer)
+
+	// Starting servers with graceful shutdown
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGQUIT, syscall.SIGTERM)
 
+	// HTTP(rest) server
 	go func() {
-		l.Infof("app: server is running on %v", cfg.Port)
+		l.Infof("app: http server is running on %v", cfg.HTTPServer.Port)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			l.Fatalf("app: faild to start server: %v", err)
+			l.Fatalf("app: faild to start http server: %v", err)
+		}
+	}()
+
+	// gRPC server
+	go func() {
+		l.Infof("app: gRPC server is running on %v", cfg.GRPCServer.Port)
+		if err := grpcServer.Serve(lis); err != nil {
+			l.Fatalf("app: faild to start gRPC server: %v", err)
 		}
 	}()
 
@@ -85,6 +108,8 @@ func Run(cfg *config.Config) {
 	}()
 
 	httpServer.SetKeepAlivesEnabled(false)
+	grpcServer.GracefulStop()
+
 	if err := httpServer.Shutdown(ctx); err != nil {
 		l.Fatalf("app: %v", err)
 	}
