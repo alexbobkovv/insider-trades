@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+}
 /*
 html,
 body {
@@ -20,134 +24,324 @@ a {
   box-sizing: border-box;
 } */
 
-
 @layer base {
   @font-face {
-    font-family: "Inter";
-    font-weight: 900;
-    src: url("/fonts/inter-v3-latin-900.woff2") format("woff2");
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/fonts/poppins-v20-latin-regular.woff2') format('woff2'),
+         url('/fonts/poppins-v20-latin-regular.woff') format('woff'),
+         url('/fonts/poppins-v20-latin-regular.ttf') format('truetype')
   }
+
   @font-face {
-    font-family: "Inter";
-    font-weight: 800;
-    src: url("/fonts/inter-v3-latin-800.woff2") format("woff2");
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 500;
+    src: url('/fonts/poppins-v20-latin-500.woff2') format('woff2'),
+         url('/fonts/poppins-v20-latin-500.woff') format('woff'),
+         url('/fonts/poppins-v20-latin-500.ttf') format('truetype')
   }
+
   @font-face {
-    font-family: "Inter";
-    font-weight: 700;
-    src: url("/fonts/inter-v3-latin-700.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
+    font-family: 'Poppins';
+    font-style: normal;
     font-weight: 600;
-    src: url("/fonts/inter-v3-latin-600.woff2") format("woff2");
+    src: url('/fonts/poppins-v20-latin-600.woff2') format('woff2'),
+         url('/fonts/poppins-v20-latin-600.woff') format('woff'),
+         url('/fonts/poppins-v20-latin-600.ttf') format('truetype')
   }
+
   @font-face {
-    font-family: "Inter";
-    font-weight: 400;
-    src: url("/fonts/inter-v3-latin-400.woff2") format("woff2");
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    src: url('/fonts/poppins-v20-latin-700.woff2') format('woff2'),
+         url('/fonts/poppins-v20-latin-700.woff') format('woff'),
+         url('/fonts/poppins-v20-latin-700.ttf') format('truetype')
   }
-  @font-face {
-    font-family: "Inter";
-    font-style: regular;
-    font-weight: 400;
-    src: url("/fonts/inter-v3-latin-regular.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-weight: 300;
-    src: url("/fonts/inter-v3-latin-300.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-weight: 200;
-    src: url("/fonts/inter-v3-latin-200.woff2") format("woff2");
-  }
-  @font-face {
-    font-family: "Inter";
-    font-weight: 100;
-    src: url("/fonts/inter-v3-latin-100.woff2") format("woff2");
-  }
+
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 900; */
+  /*   src: url("/fonts/inter-v3-latin-900.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 800; */
+  /*   src: url("/fonts/inter-v3-latin-800.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 700; */
+  /*   src: url("/fonts/inter-v3-latin-700.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 600; */
+  /*   src: url("/fonts/inter-v3-latin-600.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 400; */
+  /*   src: url("/fonts/inter-v3-latin-400.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-style: regular; */
+  /*   font-weight: 400; */
+  /*   src: url("/fonts/inter-v3-latin-regular.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 300; */
+  /*   src: url("/fonts/inter-v3-latin-300.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 200; */
+  /*   src: url("/fonts/inter-v3-latin-200.woff2") format("woff2"); */
+  /* } */
+  /* @font-face { */
+  /*   font-family: "Inter"; */
+  /*   font-weight: 100; */
+  /*   src: url("/fonts/inter-v3-latin-100.woff2") format("woff2"); */
+  /* } */
 }
 
+/* body { */
+/*   @apply bg-gray-50 text-gray-700; */
+/* } */
+html,
 body {
-  @apply bg-gray-50 text-gray-700;
+  font-family: "Poppins";
+  font-size: 1.0rem;
+  /* font-size: 14px; */
+  color: #2B2D33;
+  height: 100%;
 }
 
-#__next {
-  @apply flex flex-col h-screen;
+#__next{
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: auto;
 }
 
-.btn-blue {
-  @apply ml-4 lg:mt-0 lg:flex-shrink-0 inline-flex rounded-md shadow;
+main {
+  flex-grow: 1;
 }
 
 h1 {
-  font-family: "Inter";
+  font-family: "Poppins";
+  font-size: 2rem;
   font-weight: 700;
 }
 
-.product-image {
-  max-width: 250px;
+
+.container {
+  max-width: 1312px;
+  margin: 0px auto;
 }
 
-.main-title {
-  font-family: "Inter";
-  font-weight: 900;
+.header {
+  line-height: 4.5rem;
+  box-shadow: 8.66007px 3.60836px 72.1672px rgba(0, 0, 0, 0.18);
+  border-radius: 14.4334px;
+  margin-bottom: 2rem;
 }
 
-button {
-  font-family: "Inter";
-  font-weight: 400;
-}
-
-h2 {
-  font-family: "Inter";
-  font-weight: 400;
-}
-
-p {
-  font-family: "Inter";
-  font-style: "regular";
-  font-weight: 400;
-}
-
-.not-found {
-  color: #000;
-  background: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI",
-    "Fira Sans", Avenir, "Helvetica Neue", "Lucida Grande", sans-serif;
-  height: 100vh;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.trades {
+  display: grid;
   justify-content: center;
+  align-items: center;
+  margin-bottom: 4rem;
 }
 
-.not-found-h1 {
-  display: inline-block;
-  border-right: 1px solid rgba(0, 0, 0, 0.3);
-  margin: 0;
-  margin-right: 20px;
-  padding: 10px 23px 10px 0;
-  font-size: 24px;
-  font-weight: 500;
-  vertical-align: top;
-}
-
-.not-found-div {
-  display: inline-block;
+.trades-table {
+  border-collapse: collapse;
+  box-shadow: 0 5px 10px var(--gray-100);
+  background-color: white;
   text-align: left;
-  line-height: 49px;
-  height: 49px;
-  vertical-align: middle;
+  overflow: auto;
+
+  thead {
+    box-shadow: 0 5px 10px var(--gray-100);
+    /* box-shadow: inset 0px -1.42726px 0px #E9EAEA; */
+
+  }
+  
+  th {
+    padding: 1rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  td {
+    /* padding: 0.5rem; */
+    padding: 1rem 1rem;
+  }
+
+  .ticker {
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .trade-type {
+    border-radius: 5.70905px;
+    text-align: center;
+    padding: 0.2rem 1rem;
+  }
+
+  .type-buy {
+    background-color: #BFE9DF;
+  }
+
+  .type-sell {
+    background-color: #FACED1;
+  }
+
 }
 
-.not-found-h2 {
-  font-size: 14px;
-  font-weight: normal;
-  line-height: inherit;
-  margin: 0;
-  padding: 0;
+
+
+@media only screen and (max-width: 768px) {
+  .header {
+    line-height: 3.5rem;
+  }
+
+  .logo-font {
+    margin-top: 1rem;
+  }
+
 }
+
+.logo-font {
+  font-family: "Poppins";
+  font-weight: 700;
+  font-size: 1.5rem;
+  white-space: nowrap;
+
+  background: linear-gradient(90deg, #B224EF 0%, #7579FF 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+.nav-font {
+  display: inline-block;
+  text-decoration: none;
+  font-family: 'Poppins';
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.nav-font:hover {
+  color: #0f172a;
+  /* font-weight: 600; */
+}
+
+.nav-item-selected {
+  border-bottom: 3px solid;
+  font-weight: 600;
+  color: #7579FF;
+}
+
+.nav-font:active {
+  color: #7579FF;
+}
+
+.nav-font:focus {
+  color: #7579FF;
+}
+
+.main-search {
+  border: 1px solid #D5D5D6;
+  border-radius: 8px;
+}
+
+
+/* #__next { */
+/*   @apply flex flex-col h-screen; */
+/* } */
+
+/* .btn-blue { */
+/*   @apply ml-4 lg:mt-0 lg:flex-shrink-0 inline-flex rounded-md shadow; */
+/* } */
+
+/* h1 { */
+/*   font-family: "Inter"; */
+/*   font-weight: 700; */
+/* } */
+
+/* .product-image { */
+/*   max-width: 250px; */
+/* } */
+
+/* .main-title { */
+/*   font-family: "Inter"; */
+/*   font-weight: 900; */
+/* } */
+
+/* button { */
+/*   font-family: "Inter"; */
+/*   font-weight: 400; */
+/* } */
+
+/* h2 { */
+/*   font-family: "Inter"; */
+/*   font-weight: 400; */
+/* } */
+
+/* p { */
+/*   font-family: "Inter"; */
+/*   font-style: "regular"; */
+/*   font-weight: 400; */
+/* } */
+
+/* .not-found { */
+/*   color: #000; */
+/*   background: #fff; */
+/*   font-family: -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", */
+/*     "Fira Sans", Avenir, "Helvetica Neue", "Lucida Grande", sans-serif; */
+/*   height: 100vh; */
+/*   text-align: center; */
+/*   display: flex; */
+/*   flex-direction: column; */
+/*   align-items: center; */
+/*   justify-content: center; */
+/* } */
+
+/* .not-found-h1 { */
+/*   display: inline-block; */
+/*   border-right: 1px solid rgba(0, 0, 0, 0.3); */
+/*   margin: 0; */
+/*   margin-right: 20px; */
+/*   padding: 10px 23px 10px 0; */
+/*   font-size: 24px; */
+/*   font-weight: 500; */
+/*   vertical-align: top; */
+/* } */
+
+/* .not-found-div { */
+/*   display: inline-block; */
+/*   text-align: left; */
+/*   line-height: 49px; */
+/*   height: 49px; */
+/*   vertical-align: middle; */
+/* } */
+
+/* .not-found-h2 { */
+/*   font-size: 14px; */
+/*   font-weight: normal; */
+/*   line-height: inherit; */
+/*   margin: 0; */
+/*   padding: 0; */
+/* } */
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }

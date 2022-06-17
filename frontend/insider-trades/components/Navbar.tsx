@@ -1,20 +1,28 @@
 import React from "react";
+import Search from "./Search";
 import SearchBar from "./SearchBar";
 
 function Navbar() {
   return (
-    <nav className="flex justify-center mb-10">
-      <div className="bg-slate-50 w-full shadow shadow-gray-300 max-w-screen-2xl mx-4 px-4 md:px-auto rounded-xl">
-        <div className="flex flex-col items-center justify-center flex-wrap sm:flex-row">
-          <div className="flex order-last pb-4 sm:pb-0 sm:order-first justify-between">
-            <a className="text-indigo-500 px-3 hover:text-indigo-900" href="/">All</a>
-            <a className="text-indigo-500 px-3 hover:text-indigo-900" href="/">Buy</a>
-            <a className="text-indigo-500 px-3 hover:text-indigo-900" href="/">Sell</a>
-          </div>
-
-          <SearchBar />
-        </div>
-      </div>
+    <nav className="">
+      <ul className="flex gap-x-6 text-slate-500">
+        <li>
+          <a href="/" className="nav-font nav-item-selected">
+            Trades
+          </a>
+        </li>
+        <li>
+          <a href="/" className="nav-font">
+            Insiders
+          </a>
+        </li>
+        <li>
+          <a href="/" className="nav-font">
+            Companies
+          </a>
+        </li>
+      </ul>
+      {/* <Search /> */}
     </nav>
   );
 }

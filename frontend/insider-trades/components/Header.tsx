@@ -1,14 +1,14 @@
+import Navbar from "./Navbar";
+import Search from "./Search";
+
 export const Header = () => {
   return (
-    <header className="">
-      <div className="max-w-screen-lg mx-auto">
-        <div className="flex justify-center px-4 py-7">
-          <h1>
-            <a href="" className="block text-3xl">
-              Recent insider trades
-            </a>
-          </h1>
-        </div>
+    <header className="mt-14 mb-10 mx-4">
+      <div className="container header bg-white flex md:flex-row flex-col justify-between items-center overflow-hidden">
+        <a href="/" className="mx-6 logo-font">Insider trades</a>
+        <Navbar />
+
+        <Search />
       </div>
     </header>
   );

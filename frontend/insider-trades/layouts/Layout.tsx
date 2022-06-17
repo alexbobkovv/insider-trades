@@ -13,7 +13,6 @@ export const Layout = ({ children }: Props) => {
   return (
     <>
       <Header />
-      <Navbar />
       {children}
       <Footer />
     </>

@@ -1,7 +1,9 @@
 export const Footer = () => {
   return (
-    <footer className="bg-gray-100">
-      <div></div>
+    <footer className="">
+      <div className="container">
+        <div className="text-center"></div>
+      </div>
     </footer>
   );
 };
