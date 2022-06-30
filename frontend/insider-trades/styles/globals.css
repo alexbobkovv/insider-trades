@@ -6,23 +6,6 @@
   --gray-50: #f9fafb;
   --gray-100: #f3f4f6;
 }
-/*
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-* {
-  box-sizing: border-box;
-} */
 
 @layer base {
   @font-face {
@@ -60,63 +43,12 @@ a {
          url('/fonts/poppins-v20-latin-700.woff') format('woff'),
          url('/fonts/poppins-v20-latin-700.ttf') format('truetype')
   }
-
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 900; */
-  /*   src: url("/fonts/inter-v3-latin-900.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 800; */
-  /*   src: url("/fonts/inter-v3-latin-800.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 700; */
-  /*   src: url("/fonts/inter-v3-latin-700.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 600; */
-  /*   src: url("/fonts/inter-v3-latin-600.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 400; */
-  /*   src: url("/fonts/inter-v3-latin-400.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-style: regular; */
-  /*   font-weight: 400; */
-  /*   src: url("/fonts/inter-v3-latin-regular.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 300; */
-  /*   src: url("/fonts/inter-v3-latin-300.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 200; */
-  /*   src: url("/fonts/inter-v3-latin-200.woff2") format("woff2"); */
-  /* } */
-  /* @font-face { */
-  /*   font-family: "Inter"; */
-  /*   font-weight: 100; */
-  /*   src: url("/fonts/inter-v3-latin-100.woff2") format("woff2"); */
-  /* } */
 }
 
-/* body { */
-/*   @apply bg-gray-50 text-gray-700; */
-/* } */
 html,
 body {
   font-family: "Poppins";
   font-size: 1.0rem;
-  /* font-size: 14px; */
   color: #2B2D33;
   height: 100%;
 }
@@ -138,6 +70,9 @@ h1 {
   font-weight: 700;
 }
 
+button {
+  font-weight: 500;
+}
 
 .container {
   max-width: 1312px;
@@ -167,8 +102,6 @@ h1 {
 
   thead {
     box-shadow: 0 5px 10px var(--gray-100);
-    /* box-shadow: inset 0px -1.42726px 0px #E9EAEA; */
-
   }
   
   th {
@@ -179,7 +112,6 @@ h1 {
   }
 
   td {
-    /* padding: 0.5rem; */
     padding: 1rem 1rem;
   }
 
@@ -240,7 +172,6 @@ h1 {
 
 .nav-font:hover {
   color: #0f172a;
-  /* font-weight: 600; */
 }
 
 .nav-item-selected {
@@ -261,85 +192,6 @@ h1 {
   border: 1px solid #D5D5D6;
   border-radius: 8px;
 }
-
-
-/* #__next { */
-/*   @apply flex flex-col h-screen; */
-/* } */
-
-/* .btn-blue { */
-/*   @apply ml-4 lg:mt-0 lg:flex-shrink-0 inline-flex rounded-md shadow; */
-/* } */
-
-/* h1 { */
-/*   font-family: "Inter"; */
-/*   font-weight: 700; */
-/* } */
-
-/* .product-image { */
-/*   max-width: 250px; */
-/* } */
-
-/* .main-title { */
-/*   font-family: "Inter"; */
-/*   font-weight: 900; */
-/* } */
-
-/* button { */
-/*   font-family: "Inter"; */
-/*   font-weight: 400; */
-/* } */
-
-/* h2 { */
-/*   font-family: "Inter"; */
-/*   font-weight: 400; */
-/* } */
-
-/* p { */
-/*   font-family: "Inter"; */
-/*   font-style: "regular"; */
-/*   font-weight: 400; */
-/* } */
-
-/* .not-found { */
-/*   color: #000; */
-/*   background: #fff; */
-/*   font-family: -apple-system, BlinkMacSystemFont, Roboto, "Segoe UI", */
-/*     "Fira Sans", Avenir, "Helvetica Neue", "Lucida Grande", sans-serif; */
-/*   height: 100vh; */
-/*   text-align: center; */
-/*   display: flex; */
-/*   flex-direction: column; */
-/*   align-items: center; */
-/*   justify-content: center; */
-/* } */
-
-/* .not-found-h1 { */
-/*   display: inline-block; */
-/*   border-right: 1px solid rgba(0, 0, 0, 0.3); */
-/*   margin: 0; */
-/*   margin-right: 20px; */
-/*   padding: 10px 23px 10px 0; */
-/*   font-size: 24px; */
-/*   font-weight: 500; */
-/*   vertical-align: top; */
-/* } */
-
-/* .not-found-div { */
-/*   display: inline-block; */
-/*   text-align: left; */
-/*   line-height: 49px; */
-/*   height: 49px; */
-/*   vertical-align: middle; */
-/* } */
-
-/* .not-found-h2 { */
-/*   font-size: 14px; */
-/*   font-weight: normal; */
-/*   line-height: inherit; */
-/*   margin: 0; */
-/*   padding: 0; */
-/* } */
 
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,

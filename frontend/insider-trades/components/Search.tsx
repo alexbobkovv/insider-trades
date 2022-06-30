@@ -2,7 +2,6 @@ import React from "react";
 
 function Search() {
   return (
-    // <div className="main-search max-h-10">
     <div className="main-search flex justify-center w-auto relative text-gray-600 m-5 md:m-0 md:mx-5">
       <input
         type="search"

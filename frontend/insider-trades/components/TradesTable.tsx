@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "store/hooks";
 import { fetchTradeViews } from "store/tradeViewsSlice";
 import { TradeView } from "types/tradeView";
+import { ShowMoreButton } from "./buttons/ShowMoreButton";
 
 interface Options {
   callback: () => Promise<unknown>;
@@ -10,6 +11,7 @@ interface Options {
 
 const useInfiniteScroll = ({ callback, element }: Options) => {
   const [isFetching, setIsFetching] = useState(false);
+
   const observer = useRef<IntersectionObserver>();
 
   useEffect(() => {
@@ -39,10 +41,21 @@ const useInfiniteScroll = ({ callback, element }: Options) => {
 export const TradesTable = () => {
   const dispatch = useAppDispatch();
   const tradeViews = useAppSelector((state) => state.tradeViews);
+  const lastTradeViewElementRef = useRef<HTMLTableRowElement | null>(null);
+
+  const appendTradeViews = (limit: number, refresh: boolean) => {
+    dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: refresh, limit: limit}))
+  }
+
+  if (lastTradeViewElementRef) {
+    const node = lastTradeViewElementRef.current
+
+    useInfiniteScroll({callback: () => dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: false, limit: 20})), element: node as HTMLElement})
+  }
 
   useEffect(() => {
-    dispatch(fetchTradeViews({ refresh: true }));
-  }, [dispatch]);
+    dispatch(fetchTradeViews({ refresh: true, limit: 20}));
+  }, []);
 
   const getTradeTypeClass = (transactionTypeName: string) => {
     const buyType = "BUY";
@@ -65,9 +78,13 @@ export const TradesTable = () => {
     });
   };
 
+  const handleShowMoreTrades = () => {
+    appendTradeViews(20, false)
+  }
+
   return (
-    <div>
-      <table className="trades-table rounded-lg">
+    <div className="flex flex-col">
+      <table className="trades-table mb-8 rounded-lg">
         <thead>
           <tr>
             <th>Ticker</th>
@@ -81,12 +98,17 @@ export const TradesTable = () => {
           </tr>
         </thead>
         <tbody>
-          {tradeViews.tradeViews.map((trade: TradeView) => {
+          {tradeViews.tradeViews.map((trade: TradeView, i: number) => {
             if (trade == undefined) {
               return;
             }
+            var trRef = null
+            if (i == tradeViews.tradeViews.length - 1) {
+              trRef = lastTradeViewElementRef 
+            }
+
             return (
-              <tr key={trade.ID}>
+              <tr ref={trRef} key={trade.ID}>
                 <td className="ticker">{trade.CompanyTicker}</td>
                 <td>{trade.CompanyName}</td>
                 <td>{trade.InsiderName}</td>
@@ -104,6 +126,7 @@ export const TradesTable = () => {
           })}
         </tbody>
       </table>
+      {(!tradeViews.isLastPage && <ShowMoreButton text="Show more" onClickHandler={handleShowMoreTrades}/>)}
     </div>
   );
 };

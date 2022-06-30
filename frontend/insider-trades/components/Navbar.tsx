@@ -1,6 +1,4 @@
 import React from "react";
-import Search from "./Search";
-import SearchBar from "./SearchBar";
 
 function Navbar() {
   return (
@@ -22,7 +20,6 @@ function Navbar() {
           </a>
         </li>
       </ul>
-      {/* <Search /> */}
     </nav>
   );
 }
