@@ -42,7 +42,7 @@ func (h *handler) listTradeViews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !nextCursor.IsEmpty() {
-		w.Header().Add("next_cursor", nextCursor.GetEncoded())
+		w.Header().Add("X-next-cursor", nextCursor.GetEncoded())
 	}
 
 	h.Respond(w, r, http.StatusOK, tradeViews)
