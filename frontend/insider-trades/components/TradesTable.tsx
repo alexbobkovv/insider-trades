@@ -44,17 +44,17 @@ export const TradesTable = () => {
   const lastTradeViewElementRef = useRef<HTMLTableRowElement | null>(null);
 
   const appendTradeViews = (limit: number, refresh: boolean) => {
-    dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: refresh, limit: limit}))
+    dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: refresh, limit: limit }))
   }
 
   if (lastTradeViewElementRef) {
     const node = lastTradeViewElementRef.current
 
-    useInfiniteScroll({callback: () => dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: false, limit: 20})), element: node as HTMLElement})
+    useInfiniteScroll({ callback: () => dispatch(fetchTradeViews({ nextCursor: tradeViews.nextCursor, refresh: false, limit: 20 })), element: node as HTMLElement })
   }
 
   useEffect(() => {
-    dispatch(fetchTradeViews({ refresh: true, limit: 20}));
+    dispatch(fetchTradeViews({ refresh: true, limit: 20 }));
   }, []);
 
   const getTradeTypeClass = (transactionTypeName: string) => {
@@ -104,7 +104,7 @@ export const TradesTable = () => {
             }
             var trRef = null
             if (i == tradeViews.tradeViews.length - 1) {
-              trRef = lastTradeViewElementRef 
+              trRef = lastTradeViewElementRef
             }
 
             return (
@@ -126,7 +126,7 @@ export const TradesTable = () => {
           })}
         </tbody>
       </table>
-      {(!tradeViews.isLastPage && <ShowMoreButton text="Show more" onClickHandler={handleShowMoreTrades}/>)}
+      {(!tradeViews.isLastPage && <ShowMoreButton text="Show more" onClickHandler={handleShowMoreTrades} />)}
     </div>
   );
 };
