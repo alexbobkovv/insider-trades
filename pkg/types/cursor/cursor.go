@@ -51,6 +51,10 @@ func (c *Cursor) GetUNIXTime() int64 {
 	return c.DecodedTimestamp.Unix()
 }
 
+func (c *Cursor) GetUNIXTimeFloat64() float64 {
+	return float64(c.DecodedTimestamp.Unix())
+}
+
 func (c *Cursor) IsEmpty() bool {
 	return c.Empty
 }
