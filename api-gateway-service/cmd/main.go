@@ -34,8 +34,12 @@ func main() {
 	}
 	l.Info("main: zap initialized")
 
-	redisClient := redisdb.New(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Username, cfg.Redis.Password)
-	redisCache := cache.New(redisClient)
+	redisClient, err := redisdb.New(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
+	if err != nil {
+		l.Fatalf("main: faild to connect to redis: %w", err)
+	}
+
+	redisCache := cache.New(redisClient, l)
 
 	// Connect to gRPC receiver server
 	connToReceiver, err := grpc.Dial(cfg.GRPC.ReceiverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -50,7 +54,7 @@ func main() {
 
 	tradeClient := api.NewTradeServiceClient(connToReceiver)
 
-	gatewayService := service.New(tradeClient)
+	gatewayService := service.New(tradeClient, redisCache)
 
 	router := mux.NewRouter()
 

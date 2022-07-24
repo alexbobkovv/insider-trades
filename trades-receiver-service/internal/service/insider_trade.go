@@ -50,7 +50,7 @@ func (s *insiderTradeService) Receive(ctx context.Context, trade *entity.Trade) 
 func (s *insiderTradeService) ListTransactions(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*entity.Transaction, *cursor.Cursor, error) {
 	transactions, nextCursor, err := s.repo.ListTransactions(ctx, reqCursor, limit)
 	if err != nil {
-		return nil, cursor.NewEmpty(), fmt.Errorf("(s *insiderTradeService) ListTrades: %w", err)
+		return nil, nil, fmt.Errorf("(s *insiderTradeService) ListTrades: %w", err)
 	}
 
 	return transactions, nextCursor, nil

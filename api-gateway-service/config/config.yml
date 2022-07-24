@@ -11,7 +11,7 @@ logger:
   format: 'console'
   filepath: './insider-trades-api-gateway.log'
 redis:
-  host: '127.0.0.1'
+  host: 'redis'
   port: '6379'
 rabbitmq:
   exchange: 'trades'
