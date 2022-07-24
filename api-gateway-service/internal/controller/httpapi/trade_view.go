@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/alexbobkovv/insider-trades/api-gateway-service/config"
-	"github.com/alexbobkovv/insider-trades/api-gateway-service/internal/cache"
 	"github.com/alexbobkovv/insider-trades/api-gateway-service/internal/service"
 	"github.com/alexbobkovv/insider-trades/pkg/logger"
 	"github.com/gorilla/mux"
@@ -19,10 +18,10 @@ type handler struct {
 	s     service.Gateway
 	l     *logger.Logger
 	cfg   *config.Config
-	cache *cache.TradeCache
+	cache service.Cache
 }
 
-func NewHandler(service service.Gateway, logger *logger.Logger, config *config.Config, tradeCache *cache.TradeCache) *handler {
+func NewHandler(service service.Gateway, logger *logger.Logger, config *config.Config, tradeCache service.Cache) *handler {
 	return &handler{s: service, l: logger, cfg: config, cache: tradeCache}
 }
 

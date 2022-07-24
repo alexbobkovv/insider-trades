@@ -36,6 +36,17 @@ func (h *handler) listTradeViews(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	viewsCache, nextCur, err := h.cache.ListTrades(r.Context(), reqCursor, reqLimit)
+	if err == nil && len(viewsCache) != 0 {
+
+		if !nextCur.IsEmpty() {
+			w.Header().Add("X-next-cursor", nextCur.GetEncoded())
+		}
+
+		h.Respond(w, r, http.StatusOK, viewsCache)
+		return
+	}
+
 	tradeViews, nextCursor, err := h.s.ListTrades(r.Context(), reqCursor, reqLimit)
 	if err != nil {
 		h.Error(w, r, http.StatusInternalServerError, fmt.Errorf("%s: %w", methodName, err))
