@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Redis cache for tradeViews responses
 type TradeCache struct {
 	client *redisdb.RedisClient
 	l      *logger.Logger
@@ -22,19 +23,22 @@ func New(client *redisdb.RedisClient, logger *logger.Logger) *TradeCache {
 	return &TradeCache{client: client, l: logger}
 }
 
+// ListTrades returns TradeViews and cursor from cache using ZRangeByScore if got empty result or wrong number of views returns nil, nil, nil
 func (c *TradeCache) ListTrades(ctx context.Context, reqCursor *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
-	const methodName = "(c *TradeCache) ListTradesJSON"
+	const methodName = "(c *TradeCache) ListTrades"
 	const setName = "tradeViews"
 
+	// Redis UNIX time cursor for pagination
 	var redisCursor string
 	if reqCursor.IsEmpty() {
-		redisCursor = "+inf"
+		const unlimited = "+inf"
+		redisCursor = unlimited
 	} else {
 		cursorUNIX := reqCursor.GetUNIXTime()
 		redisCursor = strconv.Itoa(int(cursorUNIX))
 	}
 
-	// ZRANGEBYSCORE zset -inf +inf WITHSCORES LIMIT 0 2
+	// E.g. ZRANGEBYSCORE zset -inf +inf WITHSCORES LIMIT 0 2
 	tradeStrings, err := c.client.ZRevRangeByScore(ctx, setName, &redis.ZRangeBy{
 		Min:    "0",
 		Max:    redisCursor,
@@ -47,21 +51,18 @@ func (c *TradeCache) ListTrades(ctx context.Context, reqCursor *cursor.Cursor, l
 		return nil, nil, fmt.Errorf("%s: failed to scan trades range from cache: %w", methodName, err)
 	}
 
+	// Check for the right number of views
 	if len(tradeStrings) == 0 || len(tradeStrings) != int(limit) {
 		return nil, nil, nil
 	}
 
-	tradeViews := make([]*api.TradeViewResponse, len(tradeStrings))
-
-	for idx, tradeString := range tradeStrings {
-		view := &api.TradeViewResponse{}
-		if err := proto.Unmarshal([]byte(tradeString), view); err != nil {
-			return nil, nil, fmt.Errorf("%s: failed to unmarshal redis tradeView to *api.TradeViewResponse: %w", methodName, err)
-		}
-
-		tradeViews[idx] = view
+	// Unmarshalling to *api.TradeViewResponse
+	tradeViews, err := c.unmarshallTradeViewsFromCache(tradeStrings)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%s: %w", methodName, err)
 	}
 
+	// Calculates paginaciton cursor
 	lastView := tradeViews[len(tradeViews)-1]
 	var nextCursor *cursor.Cursor
 
@@ -73,6 +74,7 @@ func (c *TradeCache) ListTrades(ctx context.Context, reqCursor *cursor.Cursor, l
 	return tradeViews, nextCursor, nil
 }
 
+// AddTrades gets tradeViews and caches them via redis ZaddNX using UNIX time cursor as a score for proper timestamp ordering, pagination and fast access
 func (c *TradeCache) AddTrades(ctx context.Context, trades []*api.TradeViewResponse) {
 	const methodName = "(c *TradeCache) AddTrades"
 	const setName = "tradeViews"
@@ -109,4 +111,20 @@ func (c *TradeCache) AddTrades(ctx context.Context, trades []*api.TradeViewRespo
 		c.l.Errorf("%s: failed to add trades to cache: %s", methodName, err)
 		return
 	}
+}
+
+func (c *TradeCache) unmarshallTradeViewsFromCache(tradeStrings []string) ([]*api.TradeViewResponse, error) {
+
+	tradeViews := make([]*api.TradeViewResponse, len(tradeStrings))
+
+	for idx, tradeString := range tradeStrings {
+		view := &api.TradeViewResponse{}
+		if err := proto.Unmarshal([]byte(tradeString), view); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal redis tradeView to *api.TradeViewResponse: %w", err)
+		}
+
+		tradeViews[idx] = view
+	}
+
+	return tradeViews, nil
 }
