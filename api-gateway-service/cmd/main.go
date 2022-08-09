@@ -41,7 +41,7 @@ func main() {
 
 	redisCache := cache.New(redisClient, l)
 
-	// Connect to gRPC receiver server
+	// Connect to gRPC trades receiver service
 	connToReceiver, err := grpc.Dial(cfg.GRPC.ReceiverAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		l.Fatalf("main: failed to dial to gRPC receiver server: %v", err)
@@ -57,10 +57,8 @@ func main() {
 	gatewayService := service.New(tradeClient, redisCache)
 
 	router := mux.NewRouter()
-
 	handler := httpapi.NewHandler(gatewayService, l, cfg, redisCache)
 	handler.Register(router)
-
 	httpServer := httpserver.New(router, cfg.HTTPServer.Port)
 
 	// Starting server with graceful shutdown

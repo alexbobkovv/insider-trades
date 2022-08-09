@@ -18,7 +18,6 @@ func New(tradeService api.TradeServiceClient, tradesCache Cache) *gatewayService
 	return &gatewayService{receiver: tradeService, cache: tradesCache}
 }
 
-// TODO Cursor interface
 // ListTrades returns a slice of TradeViews and cursor from tradesReceiver service or empty slice if got empty response from service
 func (s *gatewayService) ListTrades(ctx context.Context, crs *cursor.Cursor, limit uint32) ([]*api.TradeViewResponse, *cursor.Cursor, error) {
 	const methodName = "(s *gatewayService) ListTrades"
