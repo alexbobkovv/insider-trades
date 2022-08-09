@@ -1,0 +1,11 @@
+repos:
+- repo: https://github.com/dnephin/pre-commit-golang
+  rev: v0.5.0
+  hooks:
+    - id: go-fmt
+    - id: go-imports
+    - id: go-cyclo
+      args: [-ignore "trade.pb.go"]
+    - id: golangci-lint
+    - id: go-unit-tests
+    - id: go-build
