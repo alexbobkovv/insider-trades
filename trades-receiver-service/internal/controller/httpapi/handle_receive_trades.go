@@ -1,11 +1,9 @@
 package httpapi
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"net/http"
 	"strings"
@@ -113,17 +111,6 @@ func (h *handler) validateTrades(trades *InsiderTrades) error {
 	return nil
 }
 
-func (h *handler) logRequestBody(r *http.Request) {
-	buf, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		h.l.Errorf("error reading request body: %v", err)
-		return
-	}
-	h.l.Info("logRequestBody: %v", string(buf))
-	reader := ioutil.NopCloser(bytes.NewBuffer(buf))
-	r.Body = reader
-}
-
 // receiveTrades godoc
 // @Summary     receiveTrades from external api
 // @Description receiveTrades from external api
@@ -144,8 +131,6 @@ func (h *handler) receiveTrades(w http.ResponseWriter, r *http.Request) {
 			h.l.Errorf("receiveTrades: failed to close body: %v", err)
 		}
 	}()
-
-	h.logRequestBody(r)
 
 	if err := json.NewDecoder(r.Body).Decode(&trades); err != nil {
 		h.l.Info("receiveTrades handler: failed to decode json to struct: ", err, "\nrequest body: ", r.Body)
