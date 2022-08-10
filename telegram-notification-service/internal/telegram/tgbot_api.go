@@ -24,6 +24,7 @@ func New(cfg *config.Telegram) (*TgBotAPI, error) {
 	return &TgBotAPI{api: a, cfg: cfg}, nil
 }
 
+// SendTrade formats trade and publishes it through tgbotapi
 func (t *TgBotAPI) SendTrade(trade *api.Trade) error {
 	printer := message.NewPrinter(language.English)
 	reportedOn, err := time.Parse(time.RFC3339, trade.SecF.ReportedOn)
